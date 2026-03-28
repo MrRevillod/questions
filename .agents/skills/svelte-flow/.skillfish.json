@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "svelte-flow",
+  "owner": "linehaul-ai",
+  "repo": "linehaulai-claude-marketplace",
+  "path": "plugins/svelte-flow/skills/svelte-flow",
+  "branch": "main",
+  "sha": "bcac6fedb48e01a0dfc34834f94909ca58219238",
+  "source": "manual"
+}

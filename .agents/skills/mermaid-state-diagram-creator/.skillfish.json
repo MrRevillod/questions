@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "mermaid-state-diagram-creator",
+  "owner": "jeremylongshore",
+  "repo": "claude-code-plugins-plus-skills",
+  "path": "planned-skills/generated/18-visual-content/mermaid-state-diagram-creator",
+  "branch": "main",
+  "sha": "1d6d7adc874a646430eac9d29b9bbdaa9f47ecea",
+  "source": "manual"
+}

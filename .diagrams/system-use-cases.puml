@@ -1,0 +1,90 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam defaultFontName Arial
+skinparam actorStyle awesome
+skinparam RectangleBorderColor #D1D5DB
+skinparam RectangleBackgroundColor #FFFFFF
+skinparam ArrowColor #4B5563
+skinparam linetype ortho
+skinparam usecase {
+  BackgroundColor #F9FAFB
+  BorderColor #111827
+  ArrowColor #374151
+  ActorBorderColor #111827
+  ActorFontColor #111827
+  BorderThickness 1
+}
+
+actor Usuario as User
+actor Estudiante as Student
+actor Ayudante as Assistant
+actor Profesor as Teacher
+
+Student --|> User
+Assistant --|> User
+Teacher --|> Assistant
+
+rectangle "Sistema de Gestion de Cuestionarios" {
+  package "Sesion" {
+    usecase "Iniciar sesion" as UC_Login
+    usecase "Cerrar sesion" as UC_Logout
+    usecase "Ver perfil" as UC_Me
+  }
+
+  package "Gestion de quizzes" {
+    usecase "Crear quiz" as UC_CreateQuiz
+    usecase "Listar quizzes\ngestionables" as UC_ListManaged
+    usecase "Ver detalle\nde quiz" as UC_ViewQuiz
+    usecase "Editar quiz" as UC_EditQuiz
+    usecase "Agregar\ncollaborator" as UC_AddCollaborator
+    usecase "Quitar\ncollaborator" as UC_RemoveCollaborator
+  }
+
+  package "Rendicion" {
+    usecase "Unirse por codigo" as UC_JoinByCode
+    usecase "Ver\ninstrucciones" as UC_Instructions
+    usecase "Comenzar\nintento" as UC_StartAttempt
+    usecase "Guardar\nrespuesta" as UC_SaveAnswer
+    usecase "Entregar\nintento" as UC_SubmitAttempt
+    usecase "Recuperar intento\nen curso" as UC_ResumeAttempt
+  }
+
+  package "Gestion de roles" {
+    usecase "Listar usuarios" as UC_ListUsers
+    usecase "Asignar rol\nassistant" as UC_AssignAssistant
+    usecase "Quitar rol\nassistant" as UC_RemoveAssistant
+  }
+}
+
+User --> UC_Login
+User --> UC_Logout
+User --> UC_Me
+Student --> UC_JoinByCode
+Student --> UC_Instructions
+Student --> UC_StartAttempt
+Student --> UC_SaveAnswer
+Student --> UC_SubmitAttempt
+Student --> UC_ResumeAttempt
+
+Assistant --> UC_CreateQuiz
+Assistant --> UC_ListManaged
+Assistant --> UC_ViewQuiz
+Assistant --> UC_EditQuiz
+
+Teacher --> UC_AddCollaborator
+Teacher --> UC_RemoveCollaborator
+Teacher --> UC_ListUsers
+Teacher --> UC_AssignAssistant
+Teacher --> UC_RemoveAssistant
+
+legend right
+  Reglas actuales:
+  - Las respuestas se guardan por questionId.
+  - Assistant y Teacher editan quizzes
+    donde sean owner o collaborator.
+  - Solo el owner gestiona collaborators.
+endlegend
+
+@enduml

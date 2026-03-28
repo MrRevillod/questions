@@ -1,0 +1,83 @@
+---
+config:
+  theme: base
+  themeVariables:
+    background: "#ffffff"
+    primaryColor: "#ffffff"
+    primaryTextColor: "#111827"
+    primaryBorderColor: "#111827"
+    lineColor: "#374151"
+    secondaryColor: "#ffffff"
+    tertiaryColor: "#ffffff"
+    mainBkg: "#ffffff"
+    actorBkg: "#ffffff"
+    actorBorder: "#111827"
+    actorTextColor: "#111827"
+    labelBoxBkgColor: "#ffffff"
+    labelBoxBorderColor: "#111827"
+    labelTextColor: "#111827"
+    loopTextColor: "#111827"
+    noteBkgColor: "#ffffff"
+    noteBorderColor: "#111827"
+    noteTextColor: "#111827"
+    signalColor: "#111827"
+    signalTextColor: "#111827"
+---
+sequenceDiagram
+    autonumber
+
+    actor Estudiante
+    participant UI as Frontend
+    participant Local as IndexedDB/localStorage
+    participant API as Backend API
+    participant DB as Base de Datos
+
+    rect rgb(255, 255, 255)
+
+    Estudiante->>UI: Ingresa join code
+    UI->>API: POST /quizzes/join-by-code
+    API->>DB: Buscar quiz por codigo
+    DB-->>API: Quiz encontrado
+    API-->>UI: Vista previa + instrucciones
+    UI-->>Estudiante: Muestra pantalla de instrucciones
+
+    Estudiante->>UI: Pulsa "Comenzar"
+    UI->>API: POST /quizzes/{quizId}/attempts
+    API->>DB: Crear attempt + calcular expiresAt
+    API->>DB: Obtener quiz y preguntas
+    DB-->>API: Quiz + preguntas
+    API->>API: Mezclar preguntas y construir snapshot
+    API-->>UI: attemptId + snapshot completo
+    UI->>Local: Guardar snapshot del intento
+    UI-->>Estudiante: Renderizar preguntas en orden aleatorio
+
+    loop Por cada respuesta o cambio de respuesta
+        Estudiante->>UI: Selecciona respuesta
+        UI->>Local: Guardar respuesta localmente
+        UI->>API: PUT /attempts/{attemptId}/answers/{questionId}
+        API->>DB: Upsert respuesta por questionId
+        DB-->>API: Respuesta persistida
+        API-->>UI: OK
+    end
+
+    alt Perdida de conexion durante la rendicion
+        Estudiante->>UI: Sigue respondiendo
+        UI->>Local: Guardar respuestas pendientes
+        UI-->>Estudiante: Mantiene intento disponible offline
+    end
+
+    alt Conexion restablecida
+        UI->>API: Reintenta sincronizar respuestas pendientes
+        API->>DB: Upsert respuestas pendientes
+        DB-->>API: OK
+        API-->>UI: Sincronizacion completada
+    end
+
+    Estudiante->>UI: Pulsa "Entregar"
+    UI->>API: POST /attempts/{attemptId}/submit
+    API->>DB: Validar estado y marcar submitted
+    DB-->>API: Attempt actualizado
+    API-->>UI: Entrega exitosa
+    UI->>Local: Eliminar snapshot y respuestas locales
+    UI-->>Estudiante: Mostrar confirmacion de entrega
+    end
