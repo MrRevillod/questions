@@ -61,10 +61,11 @@ impl QuizRepository {
                 certainly_table,
                 start_time,
                 attempt_duration_minutes,
+                closed_at,
                 created_at,
                 updated_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING *",
         )
         .bind(&quiz.id)
@@ -76,6 +77,7 @@ impl QuizRepository {
         .bind(&quiz.certainly_table)
         .bind(&quiz.start_time)
         .bind(&quiz.attempt_duration_minutes)
+        .bind(&quiz.closed_at)
         .bind(&quiz.created_at)
         .bind(&quiz.updated_at)
         .fetch_one(self.db.get_pool())
@@ -88,11 +90,12 @@ impl QuizRepository {
         let updated = sqlx::query_as::<_, QuizEntity>(
             "UPDATE quizzes
              SET title = $2,
-                 questions = $3,
-                 certainly_table = $4,
-                 start_time = $5,
-                 attempt_duration_minutes = $6,
-                 updated_at = $7
+                  questions = $3,
+                  certainly_table = $4,
+                  start_time = $5,
+                  attempt_duration_minutes = $6,
+                  closed_at = $7,
+                  updated_at = $8
              WHERE id = $1
              RETURNING *",
         )
@@ -102,6 +105,7 @@ impl QuizRepository {
         .bind(&quiz.certainly_table)
         .bind(&quiz.start_time)
         .bind(&quiz.attempt_duration_minutes)
+        .bind(&quiz.closed_at)
         .bind(&quiz.updated_at)
         .fetch_one(self.db.get_pool())
         .await?;
@@ -170,5 +174,23 @@ impl QuizRepository {
         .await?;
 
         Ok(users)
+    }
+
+    pub async fn close_quiz(&self, quiz_id: &Uuid) -> AppResult<QuizEntity> {
+        let now = Utc::now();
+
+        let quiz = sqlx::query_as::<_, QuizEntity>(
+            "UPDATE quizzes
+             SET closed_at = COALESCE(closed_at, $2),
+                 updated_at = $2
+             WHERE id = $1
+             RETURNING *",
+        )
+        .bind(quiz_id)
+        .bind(now)
+        .fetch_one(self.db.get_pool())
+        .await?;
+
+        Ok(quiz)
     }
 }

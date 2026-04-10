@@ -21,8 +21,8 @@ use sword::prelude::*;
 pub struct QuizzesModule;
 
 impl Module for QuizzesModule {
-    fn register_adapters(adapters: &AdapterRegistry) {
-        adapters.register::<QuizController>();
+    fn register_controllers(controllers: &ControllerRegistry) {
+        controllers.register::<QuizController>();
     }
 
     fn register_components(components: &ComponentRegistry) {

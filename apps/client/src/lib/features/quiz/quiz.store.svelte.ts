@@ -1,5 +1,16 @@
 import { PersistedState } from 'runed'
-import type { AttemptAnswer, AttemptSnapshot, JoinQuizPreview } from '$lib/features/quiz/types'
+import type {
+	AttemptAnswer,
+	ManagedAttemptSummary,
+	AttemptResult,
+	AttemptSnapshot,
+	JoinQuizPreview
+} from '$lib/features/quiz/types'
+
+type ManagedQuizAttemptsPanel = {
+	quizId: string
+	title: string
+}
 
 type AttemptSubmittedSummary = {
 	studentName: string
@@ -21,6 +32,9 @@ class QuizUiStore {
 	participantJoinCode = $state<string | null>(null)
 	isAttemptSubmittedModalOpen = $state(false)
 	attemptSubmittedSummary = $state<AttemptSubmittedSummary | null>(null)
+	attemptResult = $state<AttemptResult | null>(null)
+	managedAttemptsPanel = $state<ManagedQuizAttemptsPanel | null>(null)
+	managedAttempts = $state<ManagedAttemptSummary[]>([])
 	currentQuestionIndex = $state(0)
 
 	get activeAttempt() {
@@ -33,6 +47,18 @@ class QuizUiStore {
 
 	get attemptId() {
 		return this.activeAttempt?.attemptId ?? null
+	}
+
+	get currentAttemptResult() {
+		return this.attemptResult
+	}
+
+	get currentManagedAttemptsPanel() {
+		return this.managedAttemptsPanel
+	}
+
+	get currentManagedAttempts() {
+		return this.managedAttempts
 	}
 
 	setPanel = (panel: 'join' | 'create' | 'mine' | 'assistants') => {
@@ -59,6 +85,9 @@ class QuizUiStore {
 
 	showJoinPreview = (preview: JoinQuizPreview, joinCode?: string) => {
 		this.joinPreview = preview
+		this.attemptResult = null
+		this.managedAttemptsPanel = null
+		this.managedAttempts = []
 		this.participantJoinCode = joinCode ?? null
 		this.currentQuestionIndex = 0
 		this.activePanel = 'join'
@@ -66,6 +95,9 @@ class QuizUiStore {
 
 	startQuizAttempt = (attempt: AttemptSnapshot) => {
 		this.#activeAttempt.current = attempt
+		this.attemptResult = null
+		this.managedAttemptsPanel = null
+		this.managedAttempts = []
 		this.joinPreview = null
 		this.currentQuestionIndex = 0
 		this.activePanel = 'join'
@@ -73,13 +105,47 @@ class QuizUiStore {
 
 	syncActiveAttempt = (attempt: AttemptSnapshot) => {
 		this.#activeAttempt.current = attempt
+		this.attemptResult = null
+		this.managedAttemptsPanel = null
+		this.managedAttempts = []
 		this.joinPreview = null
 		this.activePanel = 'join'
+	}
+
+	showAttemptResult = (result: AttemptResult) => {
+		this.#activeAttempt.current = null
+		this.joinPreview = null
+		this.managedAttemptsPanel = null
+		this.managedAttempts = []
+		this.attemptResult = result
+		this.currentQuestionIndex = 0
+		this.activePanel = 'join'
+	}
+
+	openManagedAttemptsPanel = (quizId: string, title: string) => {
+		this.#activeAttempt.current = null
+		this.joinPreview = null
+		this.attemptResult = null
+		this.managedAttemptsPanel = { quizId, title }
+		this.managedAttempts = []
+		this.activePanel = 'mine'
+	}
+
+	setManagedAttempts = (attempts: ManagedAttemptSummary[]) => {
+		this.managedAttempts = attempts
+	}
+
+	closeManagedAttemptsPanel = () => {
+		this.managedAttemptsPanel = null
+		this.managedAttempts = []
 	}
 
 	leaveQuizAttempt = () => {
 		this.#activeAttempt.current = null
 		this.joinPreview = null
+		this.attemptResult = null
+		this.managedAttemptsPanel = null
+		this.managedAttempts = []
 		this.participantJoinCode = null
 		this.currentQuestionIndex = 0
 		this.activePanel = 'join'
@@ -87,6 +153,9 @@ class QuizUiStore {
 
 	clearJoinPreview = () => {
 		this.joinPreview = null
+		this.attemptResult = null
+		this.managedAttemptsPanel = null
+		this.managedAttempts = []
 		this.participantJoinCode = null
 	}
 
@@ -103,6 +172,9 @@ class QuizUiStore {
 	clearAllStores = () => {
 		this.#activeAttempt.current = null
 		this.joinPreview = null
+		this.attemptResult = null
+		this.managedAttemptsPanel = null
+		this.managedAttempts = []
 		this.participantJoinCode = null
 		this.createdQuizJoinCode = null
 		this.isJoinCodeModalOpen = false

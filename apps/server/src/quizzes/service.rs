@@ -59,7 +59,25 @@ impl QuizService {
             return Err(QuizError::NotFound(code.to_string()))?;
         };
 
+        if quiz.closed_at.is_some() {
+            return Err(QuizError::Closed.into());
+        }
+
         Ok(JoinQuizPreviewView::from(&quiz))
+    }
+
+    pub async fn resolve_by_code_for_results(
+        &self,
+        current_user: &User,
+        code: &str,
+    ) -> AppResult<Uuid> {
+        self.policy.can_join_quiz(current_user)?;
+
+        let Some(quiz) = self.repository.find_by_code(code).await? else {
+            return Err(QuizError::NotFound(code.to_string()))?;
+        };
+
+        Ok(quiz.id)
     }
 
     pub async fn create(
@@ -127,7 +145,7 @@ impl QuizService {
             .is_collaborator(&quiz.id, &input.user_id)
             .await?
         {
-            return Err(QuizError::CollaboratorAlreadyExists.into());
+            return Err(QuizError::CollaboratorAlreadyExists)?;
         }
 
         self.repository
@@ -153,7 +171,7 @@ impl QuizService {
             .remove_collaborator(&quiz.id, user_id)
             .await?
         {
-            return Err(QuizError::CollaboratorNotFound.into());
+            return Err(QuizError::CollaboratorNotFound)?;
         }
 
         Ok(())
@@ -176,6 +194,7 @@ impl QuizService {
         }
 
         users.retain(|user| user.id != quiz.owner_id);
+
         Ok(users)
     }
 
@@ -210,11 +229,11 @@ impl QuizService {
             }
 
             let Some(user) = self.users.find_by_id(collaborator_id).await? else {
-                return Err(QuizError::CollaboratorNotFound.into());
+                return Err(QuizError::CollaboratorNotFound)?;
             };
 
             if !matches!(user.role, UserRole::Assistant | UserRole::Func) {
-                return Err(QuizError::InvalidCollaboratorRole.into());
+                return Err(QuizError::InvalidCollaboratorRole)?;
             }
         }
 

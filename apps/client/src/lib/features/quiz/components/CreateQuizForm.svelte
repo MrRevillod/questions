@@ -194,7 +194,7 @@
 			return
 		}
 
-		const joinCode = value.code ?? value.joinCode ?? value.join_code
+		const joinCode = value.joinCode
 
 		if (joinCode) {
 			quizUiStore.openJoinCodeModal(joinCode)

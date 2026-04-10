@@ -9,9 +9,11 @@
 	import AssistantManager from '$lib/features/users/components/AssistantManager.svelte'
 	import QuizFormatModal from '$lib/features/quiz/components/QuizFormatModal.svelte'
 	import QuizJoinCodeModal from '$lib/features/quiz/components/QuizJoinCodeModal.svelte'
-	import AttemptSubmittedModal from '$lib/features/quiz/components/AttemptSubmittedModal.svelte'
-	import { authStore } from '$lib/features/auth/auth.store.svelte'
-	import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
+import AttemptSubmittedModal from '$lib/features/quiz/components/AttemptSubmittedModal.svelte'
+import AttemptResultView from '$lib/features/quiz/components/AttemptResultView.svelte'
+import ManagedQuizAttempts from '$lib/features/quiz/components/ManagedQuizAttempts.svelte'
+import { authStore } from '$lib/features/auth/auth.store.svelte'
+import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
 
 	const canManageQuizzes = $derived.by(() => {
 		const role = authStore.session?.user.role
@@ -33,6 +35,14 @@
 {#if quizUiStore.joinedQuiz}
 	<div class="h-full min-h-0">
 		<JoinedQuizRunner />
+	</div>
+{:else if (quizUiStore as unknown as Record<string, unknown>).attemptResult}
+	<div class="h-full min-h-0">
+		<AttemptResultView />
+	</div>
+{:else if (quizUiStore as unknown as Record<string, unknown>).managedAttemptsPanel}
+	<div class="h-full min-h-0">
+		<ManagedQuizAttempts />
 	</div>
 {:else if quizUiStore.joinPreview}
 	<div class="h-full min-h-0">

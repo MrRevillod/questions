@@ -15,12 +15,13 @@ KROKI ?= kroki
 MMDC ?= mmdc
 
 .DEFAULT_GOAL := run
-.PHONY: run detach clean fmt lint migration machete clean-db db npmi npmu setup puml mmd
+.PHONY: run detach clean fmt lint migration machete clean-db db npmi npmu npmci setup puml mmd
 
 setup:
+	rm -rf $(CLIENT)/node_modules
+	cd $(CLIENT) && corepack pnpm install --frozen-lockfile --ignore-scripts
 	docker compose build
-	docker compose up client -d
-	docker exec -it questions-client /bin/sh -c "cd /app && npm install"
+	docker compose up client -d --force-recreate --renew-anon-volumes
 
 run:
 	docker compose up
@@ -40,11 +41,11 @@ db:
 
 fmt:
 	cargo fmt --all
-	cd $(CLIENT) && npm run fmt
+	cd $(CLIENT) && corepack pnpm run format
 
 lint:
 	cargo clippy --workspace --all-targets --all-features -- -D warnings
-	cd $(CLIENT) && npm run lint
+	cd $(CLIENT) && corepack pnpm run lint
 
 migration:
 	cd $(SERVER) && sqlx migrate add --source ./config/migrations "$(name)"
@@ -53,12 +54,16 @@ machete:
 	cargo machete
 
 npmi:
-	cd apps/$(app) && npm install $(pkg)
-	docker compose exec $(service) /bin/sh -c "cd /app/apps/$(app) && npm install $(pkg)"
+	cd apps/$(app) && corepack pnpm add $(pkg)
+	docker compose exec $(service) /bin/sh -c "cd /app/apps/$(app) && corepack pnpm add $(pkg)"
 
 npmu:
-	cd apps/$(app) && npm uninstall $(pkg)
-	docker compose exec $(service) /bin/sh -c "cd /app/apps/$(app) && npm uninstall $(pkg)"
+	cd apps/$(app) && corepack pnpm remove $(pkg)
+	docker compose exec $(service) /bin/sh -c "cd /app/apps/$(app) && corepack pnpm remove $(pkg)"
+
+npmci:
+	cd apps/$(app) && corepack pnpm install --frozen-lockfile --ignore-scripts
+	docker compose exec $(service) /bin/sh -c "cd /app/apps/$(app) && corepack pnpm install --frozen-lockfile --ignore-scripts"
 
 puml:
 	@test -n "$(file)" || (echo 'Uso: make puml file=nombre' && exit 1)

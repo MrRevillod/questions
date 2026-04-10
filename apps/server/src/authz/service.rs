@@ -17,8 +17,11 @@ impl AuthzService {
                     | AuthzAction::ManageQuizCollaborators
                     | AuthzAction::JoinQuizByCode
                     | AuthzAction::StartAttempt
+                    | AuthzAction::ListManagedQuizAttempts
                     | AuthzAction::SaveOwnAttemptAnswer
                     | AuthzAction::SubmitOwnAttempt
+                    | AuthzAction::ReadOwnAttemptResult
+                    | AuthzAction::FinalizeManagedAttempt
                     | AuthzAction::ListUsersAdmin
                     | AuthzAction::ListCollaboratorCandidates
                     | AuthzAction::ManageAssistants
@@ -29,7 +32,10 @@ impl AuthzService {
                     | AuthzAction::ListManagedQuizzes
                     | AuthzAction::ReadManagedQuiz
                     | AuthzAction::UpdateManagedQuiz
+                    | AuthzAction::ListManagedQuizAttempts
                     | AuthzAction::ListCollaboratorCandidates
+                    | AuthzAction::ManageQuizCollaborators
+                    | AuthzAction::FinalizeManagedAttempt
             ),
             UserRole::Student => matches!(
                 action,
@@ -37,12 +43,16 @@ impl AuthzService {
                     | AuthzAction::StartAttempt
                     | AuthzAction::SaveOwnAttemptAnswer
                     | AuthzAction::SubmitOwnAttempt
+                    | AuthzAction::ReadOwnAttemptResult
             ),
         };
 
         if !allowed {
+            tracing::warn!(role = ?role, action = ?action, "AuthzService denied action for role");
             return Err(AuthzError::Forbidden(action))?;
         }
+
+        tracing::debug!(role = ?role, action = ?action, "AuthzService allowed action for role");
 
         Ok(())
     }

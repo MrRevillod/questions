@@ -4,7 +4,7 @@ use jsonwebtoken::errors::Error as JwtError;
 use ldap3::LdapError;
 use sqlx::Error as SqlxError;
 use std::io::Error as IoError;
-use sword::prelude::*;
+use sword::web::*;
 use thiserror::Error;
 
 pub type AppResult<T = JsonResponse> = Result<T, AppError>;

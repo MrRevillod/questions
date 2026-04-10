@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { createMutation } from '@tanstack/svelte-query'
 	import { Field, Form, createForm } from '@formisch/svelte'
-	import { KeyRound } from 'lucide-svelte'
+	import { Eye, KeyRound } from 'lucide-svelte'
 	import { toast } from 'svelte-sonner'
 	import { quizService } from '$lib/features/quiz/quiz.service'
 	import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
 	import { JoinQuizSchema, type JoinQuizInput } from '$lib/features/quiz/schema'
+	import type { AppError } from '$lib/shared/errors'
 	import { toUserMessage } from '$lib/shared/errors'
 
 	const joinForm = createForm({ schema: JoinQuizSchema })
@@ -14,15 +15,37 @@
 		mutationFn: (payload: { code: string }) => quizService.joinQuizPreview(payload)
 	}))
 
+	let submitAction = $state<'join' | 'result'>('join')
+
 	const handleJoinSubmit = async (output: JoinQuizInput) => {
-		const { value, error } = await joinMutation.mutateAsync({ code: output.code })
+		const joinCode = output.code.trim()
+
+		if (submitAction === 'result') {
+			const resultResponse = await (quizService as Record<string, any>).getMyAttemptResultByCode(
+				joinCode
+			)
+			const { value: result, error: resultError } = resultResponse as {
+				value: unknown
+				error: AppError | null
+			}
+
+			if (resultError) {
+				toast.error(toUserMessage(resultError))
+				return
+			}
+
+			;(quizUiStore as Record<string, any>).showAttemptResult(result)
+			return
+		}
+
+		const { value, error } = await joinMutation.mutateAsync({ code: joinCode })
 
 		if (error) {
 			toast.error(toUserMessage(error))
 			return
 		}
 
-		quizUiStore.showJoinPreview(value, output.code.trim())
+		quizUiStore.showJoinPreview(value, joinCode)
 	}
 </script>
 
@@ -53,12 +76,26 @@
 			{/snippet}
 		</Field>
 
-		<button
-			class="btn-primary w-full sm:w-fit"
-			type="submit"
-			disabled={joinMutation.isPending}
-		>
-			{joinMutation.isPending ? 'Uniendose...' : 'Entrar'}
-		</button>
+		<div class="flex flex-wrap items-center gap-2">
+			<button
+				class="btn-primary w-full sm:w-fit"
+				type="submit"
+				onclick={() => (submitAction = 'join')}
+				disabled={joinMutation.isPending}
+			>
+				{joinMutation.isPending && submitAction === 'join' ? 'Uniendose...' : 'Entrar'}
+			</button>
+			<button
+				class="btn-secondary w-full sm:w-fit"
+				type="submit"
+				onclick={() => (submitAction = 'result')}
+				disabled={joinMutation.isPending}
+			>
+				<Eye size={14} class="mr-1 inline" />
+				{joinMutation.isPending && submitAction === 'result'
+					? 'Buscando...'
+					: 'Ver resultados'}
+			</button>
+		</div>
 	</Form>
 </section>

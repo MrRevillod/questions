@@ -27,8 +27,8 @@ pub struct AuthConfig {
 pub struct AuthModule;
 
 impl Module for AuthModule {
-    fn register_adapters(adapters: &AdapterRegistry) {
-        adapters.register::<AuthController>();
+    fn register_controllers(controllers: &ControllerRegistry) {
+        controllers.register::<AuthController>();
     }
 
     fn register_components(components: &ComponentRegistry) {

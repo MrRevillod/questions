@@ -4,6 +4,7 @@ use crate::{
 };
 use std::sync::Arc;
 use sword::prelude::*;
+use sword::web::*;
 
 #[derive(Interceptor)]
 pub struct SessionCheck {
@@ -13,35 +14,63 @@ pub struct SessionCheck {
 }
 
 impl OnRequest for SessionCheck {
-    async fn on_request(&self, mut req: Request) -> HttpInterceptorResult {
-        let token = Self::extract_bearer_token(req.authorization())?;
+    async fn on_request(&self, mut req: Request) -> WebInterceptorResult {
+        let method = req.method().to_string();
+        let path = req.uri();
+
+        let auth_header = match req.authorization() {
+            Some(value) => value,
+            None => {
+                tracing::warn!(method = %method, path = %path, "SessionCheck rejected: missing Authorization header");
+                return Err(JsonResponse::Unauthorized());
+            }
+        };
+
+        let Some(token) = auth_header.strip_prefix("Bearer ") else {
+            tracing::warn!(method = %method, path = %path, "SessionCheck rejected: invalid Authorization scheme");
+            return Err(JsonResponse::Unauthorized());
+        };
 
         let claims: SessionClaims = self
             .jwt_service
-            .decode(&token, self.config.jwt_secret.as_ref())?;
+            .decode(&token.to_string(), self.config.jwt_secret.as_ref())
+            .inspect_err(|error| {
+                tracing::warn!(method = %method, path = %path, error = %error, "SessionCheck rejected: token decode failed");
+            })?;
 
         if claims.typ != "access" {
+            tracing::warn!(
+                method = %method,
+                path = %path,
+                session_id = %claims.session_id,
+                user_id = %claims.user_id,
+                token_type = %claims.typ,
+                "SessionCheck rejected: token type is not access"
+            );
             return Err(JsonResponse::Unauthorized());
         }
 
         if !self.sessions.is_active(&claims.session_id).await? {
+            tracing::warn!(
+                method = %method,
+                path = %path,
+                session_id = %claims.session_id,
+                user_id = %claims.user_id,
+                "SessionCheck rejected: session is not active"
+            );
             return Err(JsonResponse::Unauthorized());
         }
+
+        tracing::debug!(
+            method = %method,
+            path = %path,
+            session_id = %claims.session_id,
+            user_id = %claims.user_id,
+            "SessionCheck accepted"
+        );
 
         req.extensions.insert(claims);
 
         req.next().await
-    }
-}
-
-impl SessionCheck {
-    pub fn extract_bearer_token(auth_header: Option<&str>) -> HttpResult<String> {
-        let auth_header = auth_header.ok_or_else(JsonResponse::Unauthorized)?;
-
-        let Some(token) = auth_header.strip_prefix("Bearer ") else {
-            return Err(JsonResponse::Unauthorized());
-        };
-
-        Ok(token.to_string())
     }
 }

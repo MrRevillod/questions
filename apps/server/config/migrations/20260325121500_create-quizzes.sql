@@ -19,8 +19,6 @@ CREATE TYPE question AS (
     images TEXT[]
 );
 
-CREATE TYPE attempt_status AS ENUM ('in_progress', 'submitted');
-
 CREATE TYPE attempt_certainty_level AS ENUM ('low', 'medium', 'high');
 
 CREATE TABLE quizzes (
@@ -33,6 +31,7 @@ CREATE TABLE quizzes (
     certainly_table certainly_table NULL,
     start_time TIMESTAMPTZ NOT NULL,
     attempt_duration_minutes INTEGER NOT NULL,
+    closed_at TIMESTAMPTZ NULL,
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
     CHECK (attempt_duration_minutes > 0)
@@ -52,12 +51,17 @@ CREATE TABLE quiz_attempts (
     started_at TIMESTAMPTZ NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL,
     submitted_at TIMESTAMPTZ NULL,
-    status attempt_status NOT NULL,
     question_order UUID[] NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
+    score_points DOUBLE PRECISION NULL,
+    score_points_max DOUBLE PRECISION NULL,
+    grade DOUBLE PRECISION NULL,
+    evaluated_at TIMESTAMPTZ NULL,
+    evaluated_by UUID NULL REFERENCES users(id),
+    results_released_at TIMESTAMPTZ NULL,
+    results_viewed_at TIMESTAMPTZ NULL,
     updated_at TIMESTAMPTZ NOT NULL,
     CHECK (expires_at > started_at),
-    CHECK ((status = 'in_progress' AND submitted_at IS NULL) OR (status = 'submitted' AND submitted_at IS NOT NULL))
+    CHECK (submitted_at IS NULL OR submitted_at >= started_at)
 );
 
 CREATE TABLE quiz_answers (
@@ -65,19 +69,19 @@ CREATE TABLE quiz_answers (
     question_id UUID NOT NULL,
     answer_index SMALLINT NOT NULL,
     certainty_level attempt_certainty_level NULL,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL,
     PRIMARY KEY (attempt_id, question_id)
 );
 
 CREATE INDEX idx_quizzes_owner_id ON quizzes(owner_id);
 CREATE INDEX idx_quizzes_created_at ON quizzes(created_at);
 CREATE INDEX idx_quizzes_join_code ON quizzes(join_code);
+CREATE INDEX idx_quizzes_closed_at ON quizzes(closed_at);
 
 CREATE INDEX idx_quiz_collaborators_user_id ON quiz_collaborators(user_id);
 
 CREATE INDEX idx_quiz_attempts_student_id ON quiz_attempts(student_id);
 CREATE INDEX idx_quiz_attempts_quiz_id ON quiz_attempts(quiz_id);
+CREATE INDEX idx_quiz_attempts_results_released_at ON quiz_attempts(results_released_at);
 CREATE UNIQUE INDEX idx_quiz_attempts_one_per_student
     ON quiz_attempts(quiz_id, student_id);
 

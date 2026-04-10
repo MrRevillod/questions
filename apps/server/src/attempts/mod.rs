@@ -19,8 +19,8 @@ use sword::prelude::*;
 pub struct AttemptsModule;
 
 impl Module for AttemptsModule {
-    fn register_adapters(adapters: &AdapterRegistry) {
-        adapters.register::<AttemptController>();
+    fn register_controllers(controllers: &ControllerRegistry) {
+        controllers.register::<AttemptController>();
     }
 
     fn register_components(components: &ComponentRegistry) {

@@ -1,0 +1,74 @@
+{
+  "title": "Python Basico - Certeza",
+  "mode": "certainty",
+  "startTimeUtc": "2030-01-15T15:00:00Z",
+  "attemptDurationMinutes": 20,
+  "collaboratorIds": [],
+  "certaintyConfig": {
+    "low": { "correct": 1, "incorrect": 0 },
+    "medium": { "correct": 2, "incorrect": -1 },
+    "high": { "correct": 3, "incorrect": -2 }
+  },
+  "questions": [
+    {
+      "question": "Que imprime `print(type(3.14))`?",
+      "options": ["<class 'int'>", "<class 'float'>", "<class 'str'>", "<class 'bool'>"],
+      "answer": 1,
+      "images": []
+    },
+    {
+      "question": "Cual es el resultado de `len('hola')`?",
+      "options": ["3", "4", "5", "Error"],
+      "answer": 1,
+      "images": []
+    },
+    {
+      "question": "Que operador se usa para potencia en Python?",
+      "options": ["^", "**", "%", "//"],
+      "answer": 1,
+      "images": []
+    },
+    {
+      "question": "Que estructura es mutable?",
+      "options": ["tuple", "str", "list", "frozenset"],
+      "answer": 2,
+      "images": []
+    },
+    {
+      "question": "Cual es la salida de `print(7 // 2)`?",
+      "options": ["3.5", "3", "4", "Error"],
+      "answer": 1,
+      "images": []
+    },
+    {
+      "question": "Que palabra clave define una funcion?",
+      "options": ["function", "def", "fn", "lambda"],
+      "answer": 1,
+      "images": []
+    },
+    {
+      "question": "Que devuelve `range(3)` al convertirlo a lista?",
+      "options": ["[1, 2, 3]", "[0, 1, 2]", "[0, 1, 2, 3]", "[3, 2, 1]"],
+      "answer": 1,
+      "images": []
+    },
+    {
+      "question": "Como se agrega un elemento al final de una lista `a`?",
+      "options": ["a.add(x)", "a.push(x)", "a.append(x)", "a.insertEnd(x)"],
+      "answer": 2,
+      "images": []
+    },
+    {
+      "question": "Que imprime `print(bool(''))`?",
+      "options": ["True", "False", "None", "Error"],
+      "answer": 1,
+      "images": []
+    },
+    {
+      "question": "Que sentencia maneja excepciones?",
+      "options": ["if / else", "for / while", "try / except", "match / case"],
+      "answer": 2,
+      "images": []
+    }
+  ]
+}

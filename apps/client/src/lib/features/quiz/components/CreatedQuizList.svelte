@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import { Clipboard, ListChecks, RotateCw } from 'lucide-svelte'
+	import { Clipboard, ListChecks, RotateCw, UsersRound } from 'lucide-svelte'
 	import { toast } from 'svelte-sonner'
 	import { quizService } from '$lib/features/quiz/quiz.service'
+	import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
 	import type { QuizSummary } from '$lib/features/quiz/types'
 	import { toUserMessage } from '$lib/shared/errors'
 
@@ -15,10 +16,19 @@
 			timeStyle: 'short'
 		}).format(new Date(value))
 
+	const getQuizStatus = (closedAt: string | null) => (closedAt ? 'Cerrado' : 'Abierto')
+
 	const copyCode = async (code: string) => {
 		await navigator.clipboard.writeText(code)
 		toast.success('Codigo copiado al portapapeles.')
 	}
+
+	const openAttempts = (quiz: QuizSummary) => {
+		;(quizUiStore as Record<string, any>).openManagedAttemptsPanel(quiz.id, quiz.title)
+	}
+
+	const getClosedAt = (quiz: QuizSummary) =>
+		(quiz as unknown as { closedAt?: string | null }).closedAt ?? null
 
 	const loadQuizzes = async () => {
 		isLoading = true
@@ -74,12 +84,21 @@
 							<p class="m-0 text-sm text-zinc-600">
 								Duracion: {quiz.attemptDurationMinutes} min - Creado: {formatDate(quiz.createdAt)}
 							</p>
+							<p class="m-0 text-sm text-zinc-700">Estado: {getQuizStatus(getClosedAt(quiz))}</p>
 						</div>
 
 						<div class="flex flex-wrap items-center gap-2">
 							<span class="code-chip">
 								{quiz.joinCode}
 							</span>
+							<button
+								class="btn-secondary"
+								type="button"
+								onclick={() => openAttempts(quiz)}
+							>
+								<UsersRound size={14} class="mr-1 inline" />
+								Intentos
+							</button>
 							<button
 								class="btn-primary"
 								type="button"

@@ -1,7 +1,12 @@
 import { request } from '$lib/shared/http/http'
 import type { PromiseResult } from '$lib/shared/result'
 import type { AppError } from '$lib/shared/errors'
-import type { AttemptAnswer, AttemptCertaintyLevel, AttemptSnapshot } from '$lib/features/quiz/types'
+import type {
+	AttemptAnswer,
+	AttemptCertaintyLevel,
+	AttemptResult,
+	AttemptSnapshot
+} from '$lib/features/quiz/types'
 
 export type SaveAttemptAnswerPayload = {
 	answerIndex: number
@@ -25,6 +30,12 @@ class AttemptService {
 			method: 'POST',
 			url: `/attempts/${attemptId}/submit`,
 			data: null
+		})
+
+	getResult = async (attemptId: string): PromiseResult<AttemptResult, AppError> =>
+		request<AttemptResult>({
+			method: 'GET',
+			url: `/attempts/${attemptId}/result`
 		})
 }
 

@@ -1,4 +1,4 @@
-use sword::prelude::HttpError;
+use sword::web::HttpError;
 use thiserror::Error;
 
 #[derive(Debug, Error, HttpError)]
@@ -30,6 +30,10 @@ pub enum AttemptError {
     #[error("Attempt already submitted")]
     AlreadySubmitted,
 
+    #[http(code = 409, message = "The attempt is still in progress.")]
+    #[error("Attempt has not been submitted yet")]
+    NotSubmitted,
+
     #[http(code = 409, message = "The quiz attempt has not started yet.")]
     #[error("Quiz attempt cannot start before quiz start time")]
     NotStarted,
@@ -48,4 +52,12 @@ pub enum AttemptError {
     )]
     #[error("Invalid answer index for question")]
     InvalidAnswerIndex,
+
+    #[http(code = 404, message = "Attempt result is not available yet.")]
+    #[error("Attempt result not available")]
+    ResultNotAvailable,
+
+    #[http(code = 409, message = "This attempt result has already been viewed.")]
+    #[error("Attempt result already viewed")]
+    ResultAlreadyViewed,
 }

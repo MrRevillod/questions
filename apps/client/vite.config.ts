@@ -4,6 +4,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
+	cacheDir: process.env.VITE_CACHE_DIR ?? 'node_modules/.vite',
 	server: {
 		host: '0.0.0.0',
 		port: 5173,

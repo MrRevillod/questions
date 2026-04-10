@@ -70,12 +70,19 @@ services:
     build:
       context: .
       dockerfile: apps/client/Dockerfile
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
     container_name: questions-client
+    user: "${UID:-1000}:${GID:-1000}"
     env_file:
       - .env
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+      - VITE_CACHE_DIR=/tmp/.vite
+      - NODE_OPTIONS=
+      - NPM_CONFIG_NODE_OPTIONS=
     volumes:
       - ./apps/client:/app
       - /app/node_modules

@@ -1,4 +1,4 @@
-use sword::prelude::HttpError;
+use sword::web::HttpError;
 use thiserror::Error;
 
 #[derive(Debug, Error, HttpError)]
@@ -40,4 +40,11 @@ pub enum QuizError {
     )]
     #[error("Invalid collaborator role")]
     InvalidCollaboratorRole,
+
+    #[http(
+        code = 409,
+        message = "This quiz has been closed and no longer accepts attempts."
+    )]
+    #[error("Quiz is closed")]
+    Closed,
 }

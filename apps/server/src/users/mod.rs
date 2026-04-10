@@ -19,8 +19,8 @@ pub use service::UsersService;
 pub struct UsersModule;
 
 impl Module for UsersModule {
-    fn register_adapters(adapters: &AdapterRegistry) {
-        adapters.register::<UsersController>();
+    fn register_controllers(controllers: &ControllerRegistry) {
+        controllers.register::<UsersController>();
     }
 
     fn register_components(components: &ComponentRegistry) {

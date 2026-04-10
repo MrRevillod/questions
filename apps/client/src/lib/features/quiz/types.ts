@@ -42,6 +42,7 @@ export type QuizSummary = {
 	questionCount: number
 	startTime: string
 	attemptDurationMinutes: number
+	closedAt: string | null
 	createdAt: string
 }
 
@@ -64,6 +65,7 @@ export type QuizDetail = {
 	certainlyTable?: CertaintyConfig | null
 	startTime: string
 	attemptDurationMinutes: number
+	closedAt: string | null
 	createdAt: string
 	updatedAt: string
 }
@@ -77,6 +79,7 @@ export type JoinQuizPreview = {
 	certainlyTable?: CertaintyConfig | null
 	startTime: string
 	attemptDurationMinutes: number
+	closedAt: string | null
 }
 
 export type QuizParticipantQuestion = {
@@ -95,6 +98,7 @@ export type QuizParticipant = {
 	certainlyTable?: CertaintyConfig | null
 	startTime: string
 	attemptDurationMinutes: number
+	closedAt: string | null
 }
 
 export type AttemptStatus = 'in_progress' | 'submitted'
@@ -115,4 +119,52 @@ export type AttemptSnapshot = {
 	status: AttemptStatus
 	quiz: QuizParticipant
 	answers: AttemptAnswer[]
+}
+
+export type AttemptQuestionResult = {
+	questionId: string
+	question: string
+	options: string[]
+	images: string[]
+	answerIndex: number | null
+	correctAnswerIndex: number
+	certaintyLevel: AttemptCertaintyLevel | null
+	isCorrect: boolean
+	awardedPoints: number
+}
+
+export type AttemptResult = {
+	attemptId: string
+	quizId: string
+	status: AttemptStatus
+	submittedAt: string
+	evaluatedAt: string
+	scorePoints: number
+	scorePointsMax: number
+	grade: number
+	resultsReleasedAt: string
+	resultsViewedAt: string | null
+	questions: AttemptQuestionResult[]
+}
+
+export type ManagedAttemptSummary = {
+	attemptId: string
+	quizId: string
+	studentId: string
+	studentName: string
+	studentUsername: string
+	startedAt: string
+	expiresAt: string
+	submittedAt: string | null
+	scorePoints: number | null
+	scorePointsMax: number | null
+	grade: number | null
+	resultsReleasedAt: string | null
+	resultsViewedAt: string | null
+}
+
+export type FinalizeAndPublishSummary = {
+	quizId: string
+	finalizedAttempts: number
+	publishedAttempts: number
 }

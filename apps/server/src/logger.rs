@@ -1,10 +1,9 @@
 use std::time::Duration;
-use sword::internal::axum::{AxumBody, AxumRequest, AxumResponse};
+use sword::internal::web::{AxumBody, AxumRequest, AxumResponse};
 
 use tower_http::classify::{ServerErrorsAsFailures, SharedClassifier};
 use tower_http::trace::{MakeSpan, OnRequest, OnResponse, TraceLayer};
 use tracing::Span;
-use tracing_subscriber::fmt;
 
 #[allow(non_snake_case)]
 pub fn LoggerLayer() -> TraceLayer<
@@ -13,14 +12,6 @@ pub fn LoggerLayer() -> TraceLayer<
     impl OnRequest<AxumBody> + Clone,
     impl OnResponse<AxumBody> + Clone,
 > {
-    tracing_subscriber::fmt()
-        .with_target(false)
-        .with_span_events(fmt::format::FmtSpan::NONE)
-        .with_max_level(tracing::Level::INFO)
-        .compact()
-        .without_time()
-        .init();
-
     TraceLayer::new_for_http()
         .on_request(|req: &AxumRequest, _: &Span| {
             tracing::info!(

@@ -20,3 +20,12 @@ jwt_secret = "${JWT_SECRET}"
 access_exp_minutes = 15
 refresh_exp_days = 7
 session_exp_days = 30
+
+[tracing]
+enabled = true
+display = false
+filter = "info,sword=info"
+format = "dev"
+time-style = "none"
+time-pattern = "%H:%M:%S"
+with-fields = []

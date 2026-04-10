@@ -46,6 +46,7 @@ pub struct QuizEntity {
     pub certainly_table: Option<CertainlyTable>,
     pub start_time: DateTime<Utc>,
     pub attempt_duration_minutes: i32,
+    pub closed_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }

@@ -1,0 +1,74 @@
+{
+  "title": "Matematicas Basicas - Certeza",
+  "mode": "certainty",
+  "startTimeUtc": "2030-01-15T16:00:00Z",
+  "attemptDurationMinutes": 20,
+  "collaboratorIds": [],
+  "certaintyConfig": {
+    "low": { "correct": 1, "incorrect": 0 },
+    "medium": { "correct": 2, "incorrect": -1 },
+    "high": { "correct": 3, "incorrect": -2 }
+  },
+  "questions": [
+    {
+      "question": "Resuelve \\(2x + 3 = 11\\). Cual es \\(x\\)?",
+      "options": ["2", "3", "4", "5"],
+      "answer": 2,
+      "images": []
+    },
+    {
+      "question": "Calcula \\(5^2 - 3^2\\).",
+      "options": ["8", "12", "16", "34"],
+      "answer": 2,
+      "images": []
+    },
+    {
+      "question": "Si \\(\\frac{3}{4} + \\frac{1}{4} = ?\\)",
+      "options": ["1", "\\(\\frac{1}{2}\\)", "\\(\\frac{3}{8}\\)", "2"],
+      "answer": 0,
+      "images": []
+    },
+    {
+      "question": "Resuelve \\(7x = 56\\).",
+      "options": ["6", "7", "8", "9"],
+      "answer": 2,
+      "images": []
+    },
+    {
+      "question": "Calcula \\(\\sqrt{81}\\).",
+      "options": ["7", "8", "9", "10"],
+      "answer": 2,
+      "images": []
+    },
+    {
+      "question": "Evalua \\(3(2 + 4)\\).",
+      "options": ["12", "15", "18", "24"],
+      "answer": 2,
+      "images": []
+    },
+    {
+      "question": "Resuelve \\(x^2 = 49\\) considerando la solucion positiva.",
+      "options": ["5", "6", "7", "8"],
+      "answer": 2,
+      "images": []
+    },
+    {
+      "question": "Si \\(2^{-1}\\) es:",
+      "options": ["2", "1", "\\(\\frac{1}{2}\\)", "\\(\\frac{1}{4}\\)"],
+      "answer": 2,
+      "images": []
+    },
+    {
+      "question": "Calcula \\(\\frac{18}{3} + 4\\).",
+      "options": ["8", "9", "10", "12"],
+      "answer": 2,
+      "images": []
+    },
+    {
+      "question": "Resuelve \\(4x - 5 = 11\\).",
+      "options": ["3", "4", "5", "6"],
+      "answer": 1,
+      "images": []
+    }
+  ]
+}

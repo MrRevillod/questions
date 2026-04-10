@@ -7,6 +7,7 @@
 	import { attemptService } from '$lib/features/attempt/attempt.service'
 	import { quizService } from '$lib/features/quiz/quiz.service'
 	import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
+	import QuestionRichText from '$lib/features/quiz/components/QuestionRichText.svelte'
 	import { toUserMessage, type AppError } from '$lib/shared/errors'
 	import type { AttemptCertaintyLevel } from '$lib/features/quiz/types'
 
@@ -264,7 +265,7 @@
 			joinCode: quizUiStore.participantJoinCode,
 			submittedAtLabel
 		})
-		quizUiStore.leaveQuizAttempt()
+		closeAttemptSilently()
 	}
 
 	$effect(() => {
@@ -306,7 +307,9 @@
 		</div>
 
 		<article class="panel-muted min-h-0 flex-1 overflow-auto p-4 sm:p-5">
-			<p class="m-0 text-lg leading-relaxed text-black sm:text-xl">{currentQuestion.question}</p>
+			<div class="m-0 text-lg text-black sm:text-xl">
+				<QuestionRichText text={currentQuestion.question} />
+			</div>
 
 			{#if currentQuestion.images.length > 0}
 				<div class="mt-4 grid gap-3 sm:grid-cols-2">
@@ -328,7 +331,7 @@
 						onclick={() => handleOptionSelect(optionIndex)}
 						disabled={isExpired || submitMutation.isPending || submissionStarted}
 					>
-						{option}
+						<QuestionRichText text={option} />
 					</button>
 				{/each}
 			</div>

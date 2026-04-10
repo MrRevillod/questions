@@ -13,7 +13,7 @@ pub struct SharedModule;
 
 impl Module for SharedModule {
     async fn register_providers(config: &Config, providers: &ProviderRegistry) {
-        let db_config = config.get_or_panic::<DatabaseConfig>();
+        let db_config = config.expect::<DatabaseConfig>();
         let database = Database::new(db_config).await;
 
         providers.register(database);

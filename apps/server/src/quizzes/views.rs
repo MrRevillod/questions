@@ -14,6 +14,7 @@ pub struct QuizSummaryView {
     pub question_count: usize,
     pub start_time: DateTime<Utc>,
     pub attempt_duration_minutes: i32,
+    pub closed_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -38,6 +39,7 @@ pub struct QuizDetailView {
     pub certainly_table: Option<CertainlyTable>,
     pub start_time: DateTime<Utc>,
     pub attempt_duration_minutes: i32,
+    pub closed_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -52,6 +54,7 @@ pub struct JoinQuizPreviewView {
     pub certainly_table: Option<CertainlyTable>,
     pub start_time: DateTime<Utc>,
     pub attempt_duration_minutes: i32,
+    pub closed_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -64,6 +67,7 @@ pub struct QuizParticipantView {
     pub certainly_table: Option<CertainlyTable>,
     pub start_time: DateTime<Utc>,
     pub attempt_duration_minutes: i32,
+    pub closed_at: Option<DateTime<Utc>>,
 }
 
 impl From<QuizEntity> for QuizSummaryView {
@@ -76,6 +80,7 @@ impl From<QuizEntity> for QuizSummaryView {
             question_count: quiz.questions.len(),
             start_time: quiz.start_time,
             attempt_duration_minutes: quiz.attempt_duration_minutes,
+            closed_at: quiz.closed_at,
             created_at: quiz.created_at,
         }
     }
@@ -93,6 +98,7 @@ impl From<QuizEntity> for QuizDetailView {
             certainly_table: quiz.certainly_table,
             start_time: quiz.start_time,
             attempt_duration_minutes: quiz.attempt_duration_minutes,
+            closed_at: quiz.closed_at,
             created_at: quiz.created_at,
             updated_at: quiz.updated_at,
         }
@@ -109,6 +115,7 @@ impl From<&QuizEntity> for JoinQuizPreviewView {
             certainly_table: quiz.certainly_table.clone(),
             start_time: quiz.start_time,
             attempt_duration_minutes: quiz.attempt_duration_minutes,
+            closed_at: quiz.closed_at,
         }
     }
 }
@@ -138,6 +145,7 @@ impl From<QuizEntity> for QuizParticipantView {
             certainly_table: quiz.certainly_table,
             start_time: quiz.start_time,
             attempt_duration_minutes: quiz.attempt_duration_minutes,
+            closed_at: quiz.closed_at,
         }
     }
 }

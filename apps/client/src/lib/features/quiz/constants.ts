@@ -1,8 +1,8 @@
 export const QUESTION_FORMAT_EXAMPLE = `{
 	"questions": [
 		{
-			"question": "¿Cuál es la capital de Chile?",
-			"options": ["Lima", "Santiago", "Bogota", "Quito"],
+			"question": "<strong>Resuelve:</strong> \\(x^2 + 2x + 1\\)",
+			"options": ["\\((x+1)^2\\)", "\\((x-1)^2\\)", "x^2 + 1", "<em>Ninguna</em>"],
 			"answer": 1,
 			"images": ["https://example.com/chile-map.png"]
 		}

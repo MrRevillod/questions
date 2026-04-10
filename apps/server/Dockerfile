@@ -49,7 +49,7 @@ RUN cargo build -p server --bin server --release
 # Production Stage
 # ==============================================================================
 
-FROM alpine:latest AS production
+FROM alpine:latest AS prod
 
 RUN apk add --no-cache ca-certificates openssl ripgrep tree && rm -rf /var/cache/apk/*
 

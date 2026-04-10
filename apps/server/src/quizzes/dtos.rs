@@ -256,6 +256,7 @@ impl CreateQuizRequest {
                 .unwrap()
                 .with_timezone(&Utc),
             attempt_duration_minutes: self.attempt_duration_minutes,
+            closed_at: None,
             created_at: Utc::now(),
             updated_at: Utc::now(),
         }

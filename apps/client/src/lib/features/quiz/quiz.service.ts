@@ -6,6 +6,9 @@ import type {
 	JoinQuizPayload,
 	JoinQuizPreview,
 	AttemptSnapshot,
+	AttemptResult,
+	FinalizeAndPublishSummary,
+	ManagedAttemptSummary,
 	QuizDetail,
 	QuizSummary
 } from '$lib/features/quiz/types'
@@ -47,6 +50,34 @@ class QuizService {
 		request<AttemptSnapshot>({
 			method: 'GET',
 			url: `/quizzes/${quizId}/attempts/me`
+		})
+
+	getManagedAttempts = async (quizId: string): PromiseResult<ManagedAttemptSummary[], AppError> =>
+		request<ManagedAttemptSummary[]>({
+			method: 'GET',
+			url: `/quizzes/${quizId}/attempts`
+		})
+
+	getMyAttemptResult = async (quizId: string): PromiseResult<AttemptResult, AppError> =>
+		request<AttemptResult>({
+			method: 'GET',
+			url: `/quizzes/${quizId}/attempts/me/result`
+		})
+
+	getMyAttemptResultByCode = async (code: string): PromiseResult<AttemptResult, AppError> =>
+		request<AttemptResult>({
+			method: 'POST',
+			url: '/quizzes/results-by-code',
+			data: { code }
+		})
+
+	finalizeAndPublish = async (
+		quizId: string
+	): PromiseResult<FinalizeAndPublishSummary, AppError> =>
+		request<FinalizeAndPublishSummary>({
+			method: 'POST',
+			url: `/quizzes/${quizId}/finalize-and-publish`,
+			data: null
 		})
 
 	getCollaborators = async (quizId: string): PromiseResult<ManagedUser[], AppError> =>

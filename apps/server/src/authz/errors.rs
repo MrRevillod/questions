@@ -1,6 +1,6 @@
 use crate::authz::AuthzAction;
 
-use sword::prelude::HttpError;
+use sword::web::HttpError;
 use thiserror::Error;
 
 #[derive(Debug, Error, HttpError)]

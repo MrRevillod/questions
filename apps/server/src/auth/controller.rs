@@ -1,15 +1,16 @@
-use crate::auth::{AuthService, LoginDto, SessionCheck, SessionClaims};
+use crate::auth::*;
 use std::sync::Arc;
 use sword::prelude::*;
+use sword::web::*;
 
-#[controller("/auth")]
+#[controller(kind = Controller::Web, path = "/auth")]
 pub struct AuthController {
     auth_service: Arc<AuthService>,
 }
 
 impl AuthController {
     #[post("/login")]
-    pub async fn login(&self, req: Request) -> HttpResult<JsonResponse> {
+    pub async fn login(&self, req: Request) -> WebResult {
         let dto = req.body::<LoginDto>()?;
 
         tracing::info!("User login attempt for username: {}", dto.username);
@@ -20,8 +21,13 @@ impl AuthController {
     }
 
     #[post("/refresh")]
-    pub async fn refresh(&self, req: Request) -> HttpResult<JsonResponse> {
-        let token = SessionCheck::extract_bearer_token(req.authorization())?;
+    pub async fn refresh(&self, req: Request) -> WebResult {
+        let auth_header = req.authorization().ok_or_else(JsonResponse::Unauthorized)?;
+
+        let Some(token) = auth_header.strip_prefix("Bearer ") else {
+            return Err(JsonResponse::Unauthorized());
+        };
+
         let response = self.auth_service.refresh(&token).await?;
 
         Ok(JsonResponse::Ok().data(response))
@@ -29,7 +35,7 @@ impl AuthController {
 
     #[post("/logout")]
     #[interceptor(SessionCheck)]
-    pub async fn logout(&self, req: Request) -> HttpResult<JsonResponse> {
+    pub async fn logout(&self, req: Request) -> WebResult {
         let session_claims = req
             .extensions
             .get::<SessionClaims>()
