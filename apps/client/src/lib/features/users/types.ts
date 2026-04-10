@@ -1,4 +1,4 @@
-export type ManagedUserRole = 'student' | 'assistant' | 'func'
+export type ManagedUserRole = "student" | "assistant" | "func"
 
 export type ManagedUser = {
 	id: string
@@ -10,5 +10,5 @@ export type ManagedUser = {
 
 export type UpdateUserRolePayload = {
 	userId: string
-	role: 'student' | 'assistant'
+	role: "student" | "assistant"
 }

@@ -1,10 +1,10 @@
 export type AppErrorType =
-	| 'Domain'
-	| 'Unauthorized'
-	| 'Network'
-	| 'Server'
-	| 'InvalidResponse'
-	| 'Unknown'
+	| "Domain"
+	| "Unauthorized"
+	| "Network"
+	| "Server"
+	| "InvalidResponse"
+	| "Unknown"
 
 export type AppError = {
 	type: AppErrorType
@@ -15,7 +15,7 @@ export type AppError = {
 
 export const toUserMessage = (error: AppError | null): string => {
 	if (!error) {
-		return ''
+		return ""
 	}
 
 	return error.message

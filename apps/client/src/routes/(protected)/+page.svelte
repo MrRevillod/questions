@@ -1,33 +1,33 @@
 <script lang="ts">
-	import { ClipboardList } from 'lucide-svelte'
-	import QuizActions from '$lib/features/quiz/components/QuizActions.svelte'
-	import JoinQuizForm from '$lib/features/quiz/components/JoinQuizForm.svelte'
-	import JoinQuizInstructions from '$lib/features/quiz/components/JoinQuizInstructions.svelte'
-	import CreateQuizForm from '$lib/features/quiz/components/CreateQuizForm.svelte'
-	import CreatedQuizList from '$lib/features/quiz/components/CreatedQuizList.svelte'
-	import JoinedQuizRunner from '$lib/features/quiz/components/JoinedQuizRunner.svelte'
-	import AssistantManager from '$lib/features/users/components/AssistantManager.svelte'
-	import QuizFormatModal from '$lib/features/quiz/components/QuizFormatModal.svelte'
-	import QuizJoinCodeModal from '$lib/features/quiz/components/QuizJoinCodeModal.svelte'
-import AttemptSubmittedModal from '$lib/features/quiz/components/AttemptSubmittedModal.svelte'
-import AttemptResultView from '$lib/features/quiz/components/AttemptResultView.svelte'
-import ManagedQuizAttempts from '$lib/features/quiz/components/ManagedQuizAttempts.svelte'
-import { authStore } from '$lib/features/auth/auth.store.svelte'
-import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
+	import { ClipboardList } from "lucide-svelte"
+	import QuizActions from "$lib/features/quiz/components/QuizActions.svelte"
+	import JoinQuizForm from "$lib/features/quiz/components/JoinQuizForm.svelte"
+	import JoinQuizInstructions from "$lib/features/quiz/components/JoinQuizInstructions.svelte"
+	import CreateQuizForm from "$lib/features/quiz/components/CreateQuizForm.svelte"
+	import CreatedQuizList from "$lib/features/quiz/components/CreatedQuizList.svelte"
+	import JoinedQuizRunner from "$lib/features/quiz/components/JoinedQuizRunner.svelte"
+	import AssistantManager from "$lib/features/users/components/AssistantManager.svelte"
+	import QuizFormatModal from "$lib/features/quiz/components/QuizFormatModal.svelte"
+	import QuizJoinCodeModal from "$lib/features/quiz/components/QuizJoinCodeModal.svelte"
+	import AttemptSubmittedModal from "$lib/features/quiz/components/AttemptSubmittedModal.svelte"
+	import AttemptResultView from "$lib/features/quiz/components/AttemptResultView.svelte"
+	import ManagedQuizAttempts from "$lib/features/quiz/components/ManagedQuizAttempts.svelte"
+	import { authStore } from "$lib/features/auth/auth.store.svelte"
+	import { quizUiStore } from "$lib/features/quiz/quiz.store.svelte"
 
 	const canManageQuizzes = $derived.by(() => {
 		const role = authStore.session?.user.role
-		return role === 'func' || role === 'assistant'
+		return role === "func" || role === "assistant"
 	})
-	const isTeacher = $derived(authStore.session?.user.role === 'func')
+	const isTeacher = $derived(authStore.session?.user.role === "func")
 
 	$effect(() => {
-		if (!canManageQuizzes && quizUiStore.activePanel !== 'join') {
-			quizUiStore.activePanel = 'join'
+		if (!canManageQuizzes && quizUiStore.activePanel !== "join") {
+			quizUiStore.activePanel = "join"
 		}
 
-		if (!isTeacher && quizUiStore.activePanel === 'assistants') {
-			quizUiStore.activePanel = 'join'
+		if (!isTeacher && quizUiStore.activePanel === "assistants") {
+			quizUiStore.activePanel = "join"
 		}
 	})
 </script>
@@ -52,7 +52,9 @@ import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
 	<section class="grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-5">
 		<div class="flex flex-col gap-2.5">
 			<p class="section-kicker m-0">Panel principal</p>
-			<h2 class="m-0 flex items-center gap-2 text-xl leading-tight text-black sm:text-2xl">
+			<h2
+				class="m-0 flex items-center gap-2 text-xl leading-tight text-black sm:text-2xl"
+			>
 				<ClipboardList size={20} class="text-black" />
 				Comenzar
 			</h2>
@@ -64,25 +66,25 @@ import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
 		<QuizActions />
 
 		<div class="min-h-0 overflow-hidden">
-			{#if quizUiStore.activePanel === 'join'}
+			{#if quizUiStore.activePanel === "join"}
 				<JoinQuizForm />
 			{/if}
 
-			{#if canManageQuizzes && quizUiStore.activePanel === 'create'}
+			{#if canManageQuizzes && quizUiStore.activePanel === "create"}
 				<CreateQuizForm />
 			{/if}
 
-			{#if canManageQuizzes && quizUiStore.activePanel === 'mine'}
+			{#if canManageQuizzes && quizUiStore.activePanel === "mine"}
 				<CreatedQuizList />
 			{/if}
 
-			{#if isTeacher && quizUiStore.activePanel === 'assistants'}
+			{#if isTeacher && quizUiStore.activePanel === "assistants"}
 				<AssistantManager />
 			{/if}
 		</div>
 	</section>
 
-		<QuizFormatModal />
-		<QuizJoinCodeModal />
-		<AttemptSubmittedModal />
+	<QuizFormatModal />
+	<QuizJoinCodeModal />
+	<AttemptSubmittedModal />
 {/if}

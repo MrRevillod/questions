@@ -1,7 +1,7 @@
-import axios, { isAxiosError } from 'axios'
-import type { AxiosRequestConfig } from 'axios'
-import type { AppError } from '$lib/shared/errors'
-import { Err, Ok, safeAsyncTry, type PromiseResult } from '$lib/shared/result'
+import axios, { isAxiosError } from "axios"
+import type { AxiosRequestConfig } from "axios"
+import type { AppError } from "$lib/shared/errors"
+import { Err, Ok, safeAsyncTry, type PromiseResult } from "$lib/shared/result"
 
 type ApiResponse<T = unknown> = {
 	code: number
@@ -19,33 +19,35 @@ export type ApiRequestConfig<TData = unknown> = AxiosRequestConfig<TData> & {
 }
 
 export const apiClient = axios.create({
-	baseURL: '/api',
+	baseURL: "/api",
 	headers: {
-		'Content-Type': 'application/json'
-	}
+		"Content-Type": "application/json",
+	},
 })
 
 const UNKNOWN_ERROR: AppError = {
-	type: 'Unknown',
-	message: 'Ocurrió un error desconocido.'
+	type: "Unknown",
+	message: "Ocurrió un error desconocido.",
 }
 
 const isApiResponse = (payload: unknown): payload is ApiResponse<unknown> => {
-	if (!payload || typeof payload !== 'object') {
+	if (!payload || typeof payload !== "object") {
 		return false
 	}
 
 	const response = payload as Partial<ApiResponse<unknown>>
 
 	return (
-		typeof response.code === 'number' &&
-		typeof response.success === 'boolean' &&
-		typeof response.message === 'string' &&
-		typeof response.timestamp === 'string'
+		typeof response.code === "number" &&
+		typeof response.success === "boolean" &&
+		typeof response.message === "string" &&
+		typeof response.timestamp === "string"
 	)
 }
 
-export const request = async <T>(config: ApiRequestConfig): PromiseResult<T, AppError> => {
+export const request = async <T>(
+	config: ApiRequestConfig
+): PromiseResult<T, AppError> => {
 	const { value: response, error: requestError } = await safeAsyncTry(
 		apiClient.request<ApiResponse<T>>(config)
 	)
@@ -62,10 +64,10 @@ export const request = async <T>(config: ApiRequestConfig): PromiseResult<T, App
 		}
 
 		return Err({
-			type: payload.code === 401 || payload.code === 403 ? 'Unauthorized' : 'Server',
+			type: payload.code === 401 || payload.code === 403 ? "Unauthorized" : "Server",
 			message: payload.message,
 			status: payload.code,
-			details: payload.error ?? null
+			details: payload.error ?? null,
 		})
 	}
 
@@ -77,10 +79,10 @@ export const request = async <T>(config: ApiRequestConfig): PromiseResult<T, App
 
 	if (!payload.success) {
 		return Err({
-			type: payload.code === 401 || payload.code === 403 ? 'Unauthorized' : 'Server',
+			type: payload.code === 401 || payload.code === 403 ? "Unauthorized" : "Server",
 			message: payload.message,
 			status: payload.code,
-			details: payload.error ?? null
+			details: payload.error ?? null,
 		})
 	}
 

@@ -68,18 +68,18 @@ impl QuizRepository {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING *",
         )
-        .bind(&quiz.id)
-        .bind(&quiz.owner_id)
+        .bind(quiz.id)
+        .bind(quiz.owner_id)
         .bind(&quiz.title)
         .bind(&quiz.kind)
         .bind(&quiz.join_code)
         .bind(&quiz.questions)
         .bind(&quiz.certainly_table)
-        .bind(&quiz.start_time)
-        .bind(&quiz.attempt_duration_minutes)
-        .bind(&quiz.closed_at)
-        .bind(&quiz.created_at)
-        .bind(&quiz.updated_at)
+        .bind(quiz.start_time)
+        .bind(quiz.attempt_duration_minutes)
+        .bind(quiz.closed_at)
+        .bind(quiz.created_at)
+        .bind(quiz.updated_at)
         .fetch_one(self.db.get_pool())
         .await?;
 
@@ -99,14 +99,14 @@ impl QuizRepository {
              WHERE id = $1
              RETURNING *",
         )
-        .bind(&quiz.id)
+        .bind(quiz.id)
         .bind(&quiz.title)
         .bind(&quiz.questions)
         .bind(&quiz.certainly_table)
-        .bind(&quiz.start_time)
-        .bind(&quiz.attempt_duration_minutes)
-        .bind(&quiz.closed_at)
-        .bind(&quiz.updated_at)
+        .bind(quiz.start_time)
+        .bind(quiz.attempt_duration_minutes)
+        .bind(quiz.closed_at)
+        .bind(quiz.updated_at)
         .fetch_one(self.db.get_pool())
         .await?;
 

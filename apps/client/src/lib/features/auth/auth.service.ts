@@ -1,8 +1,8 @@
-import { authStore } from '$lib/features/auth/auth.store.svelte'
-import { request } from '$lib/shared/http/http'
-import { Err, Ok, type PromiseResult } from '$lib/shared/result'
-import type { AppError } from '$lib/shared/errors'
-import type { AuthTokens, LoginInput, LoginResponse } from '$lib/features/auth/types'
+import { authStore } from "$lib/features/auth/auth.store.svelte"
+import { request } from "$lib/shared/http/http"
+import { Err, Ok, type PromiseResult } from "$lib/shared/result"
+import type { AppError } from "$lib/shared/errors"
+import type { AuthTokens, LoginInput, LoginResponse } from "$lib/features/auth/types"
 
 class AuthService {
 	#bootstrapPromise: PromiseResult<void, AppError> | null = null
@@ -13,11 +13,11 @@ class AuthService {
 
 	login = async (input: LoginInput): PromiseResult<LoginResponse, AppError> => {
 		const { value: session, error: loginError } = await request<LoginResponse>({
-			method: 'POST',
-			url: '/auth/login',
+			method: "POST",
+			url: "/auth/login",
 			data: input,
 			skipAuth: true,
-			skipRefresh: true
+			skipRefresh: true,
 		})
 
 		if (loginError) {
@@ -33,21 +33,21 @@ class AuthService {
 		if (!authStore.refreshToken) {
 			this.#clearClientSession()
 			return Err({
-				type: 'Domain',
-				message: 'No se encontró el token de refresco de la sesión.',
-				status: 401
+				type: "Domain",
+				message: "No se encontró el token de refresco de la sesión.",
+				status: 401,
 			})
 		}
 
 		const { value: tokens, error: refreshError } = await request<AuthTokens>({
-			method: 'POST',
-			url: '/auth/refresh',
+			method: "POST",
+			url: "/auth/refresh",
 			data: null,
 			headers: {
-				Authorization: `Bearer ${authStore.refreshToken}`
+				Authorization: `Bearer ${authStore.refreshToken}`,
 			},
 			skipAuth: true,
-			skipRefresh: true
+			skipRefresh: true,
 		})
 
 		if (refreshError) {
@@ -58,8 +58,8 @@ class AuthService {
 		if (!authStore.user) {
 			this.#clearClientSession()
 			return Err({
-				type: 'InvalidResponse',
-				message: 'No es posible refrescar tokens sin un usuario autenticado.'
+				type: "InvalidResponse",
+				message: "No es posible refrescar tokens sin un usuario autenticado.",
 			})
 		}
 
@@ -74,13 +74,13 @@ class AuthService {
 		}
 
 		const { error: logoutError } = await request<null>({
-			method: 'POST',
-			url: '/auth/logout',
+			method: "POST",
+			url: "/auth/logout",
 			data: null,
 			headers: {
-				Authorization: `Bearer ${authStore.accessToken}`
+				Authorization: `Bearer ${authStore.accessToken}`,
 			},
-			skipRefresh: true
+			skipRefresh: true,
 		})
 
 		this.#clearClientSession()

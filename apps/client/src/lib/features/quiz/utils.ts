@@ -1,6 +1,6 @@
-import * as v from 'valibot'
-import type { CertaintyConfig, QuizQuestion } from '$lib/features/quiz/types'
-import { QuestionsFileSchema, type CreateQuizInput } from '$lib/features/quiz/schema'
+import * as v from "valibot"
+import type { CertaintyConfig, QuizQuestion } from "$lib/features/quiz/types"
+import { QuestionsFileSchema, type CreateQuizInput } from "$lib/features/quiz/schema"
 
 type ParseQuestionsSuccess = {
 	questions: QuizQuestion[]
@@ -14,9 +14,10 @@ type ParseQuestionsError = {
 
 export type ParseQuestionsResult = ParseQuestionsSuccess | ParseQuestionsError
 
-const INVALID_STRUCTURE_ERROR = 'El archivo JSON no posee la estructura requerida'
+const INVALID_STRUCTURE_ERROR = "El archivo JSON no posee la estructura requerida"
 
-export const toUtcIso = (localDateTime: string) => new Date(localDateTime).toISOString()
+export const toUtcIso = (localDateTime: string) =>
+	new Date(localDateTime).toISOString()
 
 export const parseNumber = (value: string) => {
 	const parsed = Number(value)
@@ -40,7 +41,9 @@ const hasValidQuestionShape = (question: QuizQuestion) => {
 	return question.answer >= 0 && question.answer < question.options.length
 }
 
-export const parseQuestionsFile = async (file: File): Promise<ParseQuestionsResult> => {
+export const parseQuestionsFile = async (
+	file: File
+): Promise<ParseQuestionsResult> => {
 	try {
 		const raw = await file.text()
 		const payload = JSON.parse(raw) as unknown
@@ -49,7 +52,7 @@ export const parseQuestionsFile = async (file: File): Promise<ParseQuestionsResu
 		if (!parsed.success) {
 			return {
 				questions: null,
-				error: INVALID_STRUCTURE_ERROR
+				error: INVALID_STRUCTURE_ERROR,
 			}
 		}
 
@@ -58,24 +61,26 @@ export const parseQuestionsFile = async (file: File): Promise<ParseQuestionsResu
 		if (!questions.every(hasValidQuestionShape)) {
 			return {
 				questions: null,
-				error: INVALID_STRUCTURE_ERROR
+				error: INVALID_STRUCTURE_ERROR,
 			}
 		}
 
 		return {
 			questions,
-			error: null
+			error: null,
 		}
 	} catch {
 		return {
 			questions: null,
-			error: INVALID_STRUCTURE_ERROR
+			error: INVALID_STRUCTURE_ERROR,
 		}
 	}
 }
 
-export const buildCertaintyConfig = (input: CreateQuizInput): CertaintyConfig | null => {
-	if (input.mode !== 'certainty') {
+export const buildCertaintyConfig = (
+	input: CreateQuizInput
+): CertaintyConfig | null => {
+	if (input.mode !== "certainty") {
 		return null
 	}
 
@@ -111,7 +116,7 @@ export const buildCertaintyConfig = (input: CreateQuizInput): CertaintyConfig | 
 	return {
 		low: { correct: lowCorrect, incorrect: lowIncorrect },
 		medium: { correct: mediumCorrect, incorrect: mediumIncorrect },
-		high: { correct: highCorrect, incorrect: highIncorrect }
+		high: { correct: highCorrect, incorrect: highIncorrect },
 	}
 }
 

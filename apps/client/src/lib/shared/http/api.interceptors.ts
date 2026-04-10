@@ -1,10 +1,10 @@
-import { browser } from '$app/environment'
-import { AxiosHeaders, type AxiosError } from 'axios'
-import { authService } from '$lib/features/auth/auth.service'
-import { authStore } from '$lib/features/auth/auth.store.svelte'
-import { apiClient } from '$lib/shared/http/http'
+import { browser } from "$app/environment"
+import { AxiosHeaders, type AxiosError } from "axios"
+import { authService } from "$lib/features/auth/auth.service"
+import { authStore } from "$lib/features/auth/auth.store.svelte"
+import { apiClient } from "$lib/shared/http/http"
 
-import type { ApiRequestConfig } from '$lib/shared/http/http'
+import type { ApiRequestConfig } from "$lib/shared/http/http"
 
 let refreshRequest: Promise<string | null> | null = null
 
@@ -32,15 +32,15 @@ const handleUnauthorized = async (originalConfig: ApiRequestConfig) => {
 	if (!refreshedAccessToken) {
 		authStore.clearAllStores()
 		return Promise.reject({
-			type: 'Unauthorized',
-			message: 'La sesión expiró. Debes iniciar sesión nuevamente.',
-			status: 401
+			type: "Unauthorized",
+			message: "La sesión expiró. Debes iniciar sesión nuevamente.",
+			status: 401,
 		})
 	}
 
 	const headers = AxiosHeaders.from(originalConfig.headers as AxiosHeaders)
 
-	headers.set('Authorization', `Bearer ${refreshedAccessToken}`)
+	headers.set("Authorization", `Bearer ${refreshedAccessToken}`)
 	originalConfig.headers = headers
 
 	return apiClient.request(originalConfig)
@@ -58,7 +58,7 @@ export const setupApiInterceptors = () => {
 		if (!accessToken) return config
 
 		const headers = AxiosHeaders.from(config.headers)
-		headers.set('Authorization', `Bearer ${accessToken}`)
+		headers.set("Authorization", `Bearer ${accessToken}`)
 		config.headers = headers
 
 		return config
@@ -74,7 +74,7 @@ export const setupApiInterceptors = () => {
 			if (
 				browser &&
 				error.response?.status === 401 &&
-				window.location.pathname === '/login'
+				window.location.pathname === "/login"
 			) {
 				return Promise.reject(error)
 			}

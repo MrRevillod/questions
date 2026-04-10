@@ -104,7 +104,7 @@
 	})
 </script>
 
-<div class="question-rich-text text-pretty leading-relaxed">
+<div class="question-rich-text leading-relaxed text-pretty">
 	{#if renderedSegments.length === 0}
 		<span></span>
 	{:else}

@@ -102,16 +102,16 @@ impl AttemptRepository {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING *",
         )
-        .bind(&attempt.id)
-        .bind(&attempt.quiz_id)
-        .bind(&attempt.student_id)
-        .bind(&attempt.started_at)
-        .bind(&attempt.expires_at)
-        .bind(&attempt.submitted_at)
+        .bind(attempt.id)
+        .bind(attempt.quiz_id)
+        .bind(attempt.student_id)
+        .bind(attempt.started_at)
+        .bind(attempt.expires_at)
+        .bind(attempt.submitted_at)
         .bind(&attempt.question_order)
-        .bind(&attempt.results_released_at)
-        .bind(&attempt.results_viewed_at)
-        .bind(&attempt.updated_at)
+        .bind(attempt.results_released_at)
+        .bind(attempt.results_viewed_at)
+        .bind(attempt.updated_at)
         .fetch_one(self.db.get_pool())
         .await?;
 
@@ -146,9 +146,9 @@ impl AttemptRepository {
                 certainty_level = EXCLUDED.certainty_level
             RETURNING *",
         )
-        .bind(&answer.attempt_id)
-        .bind(&answer.question_id)
-        .bind(&answer.answer_index)
+        .bind(answer.attempt_id)
+        .bind(answer.question_id)
+        .bind(answer.answer_index)
         .bind(&answer.certainty_level)
         .fetch_one(self.db.get_pool())
         .await?;

@@ -1,16 +1,16 @@
-import { PersistedState } from 'runed'
-import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
-import type { AuthTokens, LoginResponse, User } from '$lib/features/auth/types'
+import { PersistedState } from "runed"
+import { quizUiStore } from "$lib/features/quiz/quiz.store.svelte"
+import type { AuthTokens, LoginResponse, User } from "$lib/features/auth/types"
 
 class AuthStore {
-	#tokens = new PersistedState<AuthTokens | null>('auth-tokens', null, {
-		storage: 'local',
-		syncTabs: false
+	#tokens = new PersistedState<AuthTokens | null>("auth-tokens", null, {
+		storage: "local",
+		syncTabs: false,
 	})
 
-	#user = new PersistedState<User | null>('auth-user', null, {
-		storage: 'local',
-		syncTabs: false
+	#user = new PersistedState<User | null>("auth-user", null, {
+		storage: "local",
+		syncTabs: false,
 	})
 
 	isReady = $state(false)
@@ -40,7 +40,7 @@ class AuthStore {
 		return {
 			accessToken: this.tokens.accessToken,
 			refreshToken: this.tokens.refreshToken,
-			user: this.user
+			user: this.user,
 		}
 	}
 
@@ -50,7 +50,7 @@ class AuthStore {
 		quizUiStore.clearAllStores()
 		this.#tokens.current = {
 			accessToken: session.accessToken,
-			refreshToken: session.refreshToken
+			refreshToken: session.refreshToken,
 		}
 		this.#user.current = session.user
 	}

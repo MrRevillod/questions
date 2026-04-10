@@ -1,11 +1,11 @@
-import { PersistedState } from 'runed'
+import { PersistedState } from "runed"
 import type {
 	AttemptAnswer,
 	ManagedAttemptSummary,
 	AttemptResult,
 	AttemptSnapshot,
-	JoinQuizPreview
-} from '$lib/features/quiz/types'
+	JoinQuizPreview,
+} from "$lib/features/quiz/types"
 
 type ManagedQuizAttemptsPanel = {
 	quizId: string
@@ -19,12 +19,16 @@ type AttemptSubmittedSummary = {
 }
 
 class QuizUiStore {
-	#activeAttempt = new PersistedState<AttemptSnapshot | null>('quiz-active-attempt', null, {
-		storage: 'local',
-		syncTabs: false
-	})
+	#activeAttempt = new PersistedState<AttemptSnapshot | null>(
+		"quiz-active-attempt",
+		null,
+		{
+			storage: "local",
+			syncTabs: false,
+		}
+	)
 
-	activePanel = $state<'join' | 'create' | 'mine' | 'assistants' | null>('join')
+	activePanel = $state<"join" | "create" | "mine" | "assistants" | null>("join")
 	isFormatModalOpen = $state(false)
 	isJoinCodeModalOpen = $state(false)
 	createdQuizJoinCode = $state<string | null>(null)
@@ -61,7 +65,7 @@ class QuizUiStore {
 		return this.managedAttempts
 	}
 
-	setPanel = (panel: 'join' | 'create' | 'mine' | 'assistants') => {
+	setPanel = (panel: "join" | "create" | "mine" | "assistants") => {
 		this.activePanel = panel
 	}
 
@@ -90,7 +94,7 @@ class QuizUiStore {
 		this.managedAttempts = []
 		this.participantJoinCode = joinCode ?? null
 		this.currentQuestionIndex = 0
-		this.activePanel = 'join'
+		this.activePanel = "join"
 	}
 
 	startQuizAttempt = (attempt: AttemptSnapshot) => {
@@ -100,7 +104,7 @@ class QuizUiStore {
 		this.managedAttempts = []
 		this.joinPreview = null
 		this.currentQuestionIndex = 0
-		this.activePanel = 'join'
+		this.activePanel = "join"
 	}
 
 	syncActiveAttempt = (attempt: AttemptSnapshot) => {
@@ -109,7 +113,7 @@ class QuizUiStore {
 		this.managedAttemptsPanel = null
 		this.managedAttempts = []
 		this.joinPreview = null
-		this.activePanel = 'join'
+		this.activePanel = "join"
 	}
 
 	showAttemptResult = (result: AttemptResult) => {
@@ -119,7 +123,7 @@ class QuizUiStore {
 		this.managedAttempts = []
 		this.attemptResult = result
 		this.currentQuestionIndex = 0
-		this.activePanel = 'join'
+		this.activePanel = "join"
 	}
 
 	openManagedAttemptsPanel = (quizId: string, title: string) => {
@@ -128,7 +132,7 @@ class QuizUiStore {
 		this.attemptResult = null
 		this.managedAttemptsPanel = { quizId, title }
 		this.managedAttempts = []
-		this.activePanel = 'mine'
+		this.activePanel = "mine"
 	}
 
 	setManagedAttempts = (attempts: ManagedAttemptSummary[]) => {
@@ -148,7 +152,7 @@ class QuizUiStore {
 		this.managedAttempts = []
 		this.participantJoinCode = null
 		this.currentQuestionIndex = 0
-		this.activePanel = 'join'
+		this.activePanel = "join"
 	}
 
 	clearJoinPreview = () => {
@@ -181,7 +185,7 @@ class QuizUiStore {
 		this.attemptSubmittedSummary = null
 		this.isAttemptSubmittedModalOpen = false
 		this.currentQuestionIndex = 0
-		this.activePanel = 'join'
+		this.activePanel = "join"
 	}
 
 	upsertAnswer = (answer: AttemptAnswer) => {
@@ -190,7 +194,7 @@ class QuizUiStore {
 		}
 
 		const answers = [...this.activeAttempt.answers]
-		const index = answers.findIndex((item) => item.questionId === answer.questionId)
+		const index = answers.findIndex(item => item.questionId === answer.questionId)
 
 		if (index >= 0) {
 			answers[index] = answer
@@ -200,7 +204,7 @@ class QuizUiStore {
 
 		this.#activeAttempt.current = {
 			...this.activeAttempt,
-			answers
+			answers,
 		}
 	}
 

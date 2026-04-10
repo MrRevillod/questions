@@ -1,4 +1,6 @@
 node_modules/
+.svelte-kit/
+apps/client/.svelte-kit/
 
 build/
 dist/

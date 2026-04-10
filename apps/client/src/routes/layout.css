@@ -1,5 +1,5 @@
-@import url('https://fonts.cdnfonts.com/css/palatino');
-@import 'tailwindcss';
+@import url("https://fonts.cdnfonts.com/css/palatino");
+@import "tailwindcss";
 
 :root {
 	--paper: #ffffff;
@@ -14,7 +14,7 @@
 	--accent-soft: #3f3f46;
 	--shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.045);
 	--shadow-float: 0 18px 40px rgba(15, 23, 42, 0.08);
-	font-family: 'Palatino', sans-serif;
+	font-family: "Palatino", sans-serif;
 	color: var(--ink);
 	background: var(--paper);
 }
@@ -35,8 +35,13 @@ body {
 		min-height: 100dvh;
 		background:
 			radial-gradient(circle at top, rgba(244, 244, 242, 0.9), transparent 38%),
-			linear-gradient(180deg, var(--paper-soft) 0%, var(--paper) 22%, var(--paper) 100%);
-		font-family: 'Palatino', 'Palatino Linotype', 'Book Antiqua', serif;
+			linear-gradient(
+				180deg,
+				var(--paper-soft) 0%,
+				var(--paper) 22%,
+				var(--paper) 100%
+			);
+		font-family: "Palatino", "Palatino Linotype", "Book Antiqua", serif;
 		font-size: 17px;
 		font-weight: 400;
 		line-height: 1.45;
@@ -91,7 +96,11 @@ body {
 	.panel-muted {
 		@apply rounded-sm border;
 		border-color: color-mix(in srgb, var(--line) 88%, white);
-		background: linear-gradient(180deg, var(--paper-soft) 0%, var(--paper-muted) 100%);
+		background: linear-gradient(
+			180deg,
+			var(--paper-soft) 0%,
+			var(--paper-muted) 100%
+		);
 	}
 
 	.input-base {
@@ -172,7 +181,7 @@ body {
 		min-height: 46px;
 	}
 
-	.action-tab[data-active='true'] {
+	.action-tab[data-active="true"] {
 		@apply border-black bg-black text-white;
 		box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
 	}
@@ -185,6 +194,6 @@ body {
 	}
 
 	.section-kicker {
-		@apply text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-600;
+		@apply text-[11px] font-semibold tracking-[0.16em] text-zinc-600 uppercase;
 	}
 }

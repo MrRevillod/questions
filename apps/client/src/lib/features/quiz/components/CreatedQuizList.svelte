@@ -1,30 +1,34 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
-	import { Clipboard, ListChecks, RotateCw, UsersRound } from 'lucide-svelte'
-	import { toast } from 'svelte-sonner'
-	import { quizService } from '$lib/features/quiz/quiz.service'
-	import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
-	import type { QuizSummary } from '$lib/features/quiz/types'
-	import { toUserMessage } from '$lib/shared/errors'
+	import { onMount } from "svelte"
+	import { Clipboard, ListChecks, RotateCw, UsersRound } from "lucide-svelte"
+	import { toast } from "svelte-sonner"
+	import { quizService } from "$lib/features/quiz/quiz.service"
+	import { quizUiStore } from "$lib/features/quiz/quiz.store.svelte"
+	import type { QuizSummary } from "$lib/features/quiz/types"
+	import { toUserMessage } from "$lib/shared/errors"
 
 	let quizzes = $state<QuizSummary[]>([])
 	let isLoading = $state(true)
 
 	const formatDate = (value: string) =>
-		new Intl.DateTimeFormat('es-CL', {
-			dateStyle: 'medium',
-			timeStyle: 'short'
+		new Intl.DateTimeFormat("es-CL", {
+			dateStyle: "medium",
+			timeStyle: "short",
 		}).format(new Date(value))
 
-	const getQuizStatus = (closedAt: string | null) => (closedAt ? 'Cerrado' : 'Abierto')
+	const getQuizStatus = (closedAt: string | null) =>
+		closedAt ? "Cerrado" : "Abierto"
 
 	const copyCode = async (code: string) => {
 		await navigator.clipboard.writeText(code)
-		toast.success('Codigo copiado al portapapeles.')
+		toast.success("Codigo copiado al portapapeles.")
 	}
 
 	const openAttempts = (quiz: QuizSummary) => {
-		;(quizUiStore as Record<string, any>).openManagedAttemptsPanel(quiz.id, quiz.title)
+		;(quizUiStore as Record<string, any>).openManagedAttemptsPanel(
+			quiz.id,
+			quiz.title
+		)
 	}
 
 	const getClosedAt = (quiz: QuizSummary) =>
@@ -71,46 +75,54 @@
 	{:else}
 		<div class="min-h-0 overflow-y-auto pr-1">
 			<div class="grid gap-3">
-			{#each quizzes as quiz}
-				<article class="panel-muted p-4 sm:p-5">
-					<div class="flex flex-wrap items-start justify-between gap-3">
-						<div class="space-y-1.5">
-							<p class="m-0 text-lg font-semibold leading-tight text-black">{quiz.title}</p>
-							<p class="m-0 text-sm text-zinc-700">
-								{quiz.kind === 'Certainly' ? 'Certeza' : 'Tradicional'} - {quiz.questionCount}{' '}
-								preguntas
-							</p>
-							<p class="m-0 text-sm text-zinc-600">Inicio: {formatDate(quiz.startTime)}</p>
-							<p class="m-0 text-sm text-zinc-600">
-								Duracion: {quiz.attemptDurationMinutes} min - Creado: {formatDate(quiz.createdAt)}
-							</p>
-							<p class="m-0 text-sm text-zinc-700">Estado: {getQuizStatus(getClosedAt(quiz))}</p>
-						</div>
+				{#each quizzes as quiz}
+					<article class="panel-muted p-4 sm:p-5">
+						<div class="flex flex-wrap items-start justify-between gap-3">
+							<div class="space-y-1.5">
+								<p class="m-0 text-lg leading-tight font-semibold text-black">
+									{quiz.title}
+								</p>
+								<p class="m-0 text-sm text-zinc-700">
+									{quiz.kind === "Certainly" ? "Certeza" : "Tradicional"} - {quiz.questionCount}{" "}
+									preguntas
+								</p>
+								<p class="m-0 text-sm text-zinc-600">
+									Inicio: {formatDate(quiz.startTime)}
+								</p>
+								<p class="m-0 text-sm text-zinc-600">
+									Duracion: {quiz.attemptDurationMinutes} min - Creado: {formatDate(
+										quiz.createdAt
+									)}
+								</p>
+								<p class="m-0 text-sm text-zinc-700">
+									Estado: {getQuizStatus(getClosedAt(quiz))}
+								</p>
+							</div>
 
-						<div class="flex flex-wrap items-center gap-2">
-							<span class="code-chip">
-								{quiz.joinCode}
-							</span>
-							<button
-								class="btn-secondary"
-								type="button"
-								onclick={() => openAttempts(quiz)}
-							>
-								<UsersRound size={14} class="mr-1 inline" />
-								Intentos
-							</button>
-							<button
-								class="btn-primary"
-								type="button"
-								onclick={() => copyCode(quiz.joinCode)}
-							>
-								<Clipboard size={14} class="mr-1 inline" />
-								Copiar
-							</button>
+							<div class="flex flex-wrap items-center gap-2">
+								<span class="code-chip">
+									{quiz.joinCode}
+								</span>
+								<button
+									class="btn-secondary"
+									type="button"
+									onclick={() => openAttempts(quiz)}
+								>
+									<UsersRound size={14} class="mr-1 inline" />
+									Intentos
+								</button>
+								<button
+									class="btn-primary"
+									type="button"
+									onclick={() => copyCode(quiz.joinCode)}
+								>
+									<Clipboard size={14} class="mr-1 inline" />
+									Copiar
+								</button>
+							</div>
 						</div>
-					</div>
-				</article>
-			{/each}
+					</article>
+				{/each}
 			</div>
 		</div>
 	{/if}

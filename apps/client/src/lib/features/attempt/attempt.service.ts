@@ -1,12 +1,12 @@
-import { request } from '$lib/shared/http/http'
-import type { PromiseResult } from '$lib/shared/result'
-import type { AppError } from '$lib/shared/errors'
+import { request } from "$lib/shared/http/http"
+import type { PromiseResult } from "$lib/shared/result"
+import type { AppError } from "$lib/shared/errors"
 import type {
 	AttemptAnswer,
 	AttemptCertaintyLevel,
 	AttemptResult,
-	AttemptSnapshot
-} from '$lib/features/quiz/types'
+	AttemptSnapshot,
+} from "$lib/features/quiz/types"
 
 export type SaveAttemptAnswerPayload = {
 	answerIndex: number
@@ -20,22 +20,24 @@ class AttemptService {
 		payload: SaveAttemptAnswerPayload
 	): PromiseResult<AttemptAnswer, AppError> =>
 		request<AttemptAnswer>({
-			method: 'PUT',
+			method: "PUT",
 			url: `/attempts/${attemptId}/answers/${questionId}`,
-			data: payload
+			data: payload,
 		})
 
-	submitAttempt = async (attemptId: string): PromiseResult<AttemptSnapshot, AppError> =>
+	submitAttempt = async (
+		attemptId: string
+	): PromiseResult<AttemptSnapshot, AppError> =>
 		request<AttemptSnapshot>({
-			method: 'POST',
+			method: "POST",
 			url: `/attempts/${attemptId}/submit`,
-			data: null
+			data: null,
 		})
 
 	getResult = async (attemptId: string): PromiseResult<AttemptResult, AppError> =>
 		request<AttemptResult>({
-			method: 'GET',
-			url: `/attempts/${attemptId}/result`
+			method: "GET",
+			url: `/attempts/${attemptId}/result`,
 		})
 }
 

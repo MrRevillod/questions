@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
-	import { Search, Users } from 'lucide-svelte'
-	import { toast } from 'svelte-sonner'
-	import { usersService } from '$lib/features/users/users.service'
-	import type { ManagedUser } from '$lib/features/users/types'
-	import { toUserMessage } from '$lib/shared/errors'
+	import { onMount } from "svelte"
+	import { Search, Users } from "lucide-svelte"
+	import { toast } from "svelte-sonner"
+	import { usersService } from "$lib/features/users/users.service"
+	import type { ManagedUser } from "$lib/features/users/types"
+	import { toUserMessage } from "$lib/shared/errors"
 
 	let isLoading = $state(true)
-	let search = $state('')
+	let search = $state("")
 	let users = $state<ManagedUser[]>([])
 
 	const filteredUsers = $derived.by(() => {
@@ -16,7 +16,7 @@
 			return users
 		}
 
-		return users.filter((user) => user.username.toLowerCase().includes(query))
+		return users.filter(user => user.username.toLowerCase().includes(query))
 	})
 
 	const loadUsers = async () => {
@@ -36,7 +36,7 @@
 	const toggleAssistant = async (user: ManagedUser, isAssistant: boolean) => {
 		const { value, error } = await usersService.setUserRole({
 			userId: user.id,
-			role: isAssistant ? 'assistant' : 'student'
+			role: isAssistant ? "assistant" : "student",
 		})
 
 		if (error) {
@@ -44,7 +44,7 @@
 			return
 		}
 
-		users = users.map((item) => (item.id === value.id ? value : item))
+		users = users.map(item => (item.id === value.id ? value : item))
 		toast.success(`Rol actualizado para ${value.username}.`)
 	}
 
@@ -105,9 +105,12 @@
 								<input
 									class="h-4 w-4 accent-black"
 									type="checkbox"
-									checked={user.role === 'assistant'}
-									onchange={(event) =>
-										toggleAssistant(user, (event.currentTarget as HTMLInputElement).checked)}
+									checked={user.role === "assistant"}
+									onchange={event =>
+										toggleAssistant(
+											user,
+											(event.currentTarget as HTMLInputElement).checked
+										)}
 								/>
 							</td>
 						</tr>

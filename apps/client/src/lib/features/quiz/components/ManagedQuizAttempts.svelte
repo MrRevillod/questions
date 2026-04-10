@@ -1,11 +1,18 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
-	import { CheckCircle2, Clock3, Download, Eye, RefreshCcw, UserRoundCheck } from 'lucide-svelte'
-	import { toast } from 'svelte-sonner'
-	import { quizService } from '$lib/features/quiz/quiz.service'
-	import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
-	import type { AppError } from '$lib/shared/errors'
-	import { toUserMessage } from '$lib/shared/errors'
+	import { onMount } from "svelte"
+	import {
+		CheckCircle2,
+		Clock3,
+		Download,
+		Eye,
+		RefreshCcw,
+		UserRoundCheck,
+	} from "lucide-svelte"
+	import { toast } from "svelte-sonner"
+	import { quizService } from "$lib/features/quiz/quiz.service"
+	import { quizUiStore } from "$lib/features/quiz/quiz.store.svelte"
+	import type { AppError } from "$lib/shared/errors"
+	import { toUserMessage } from "$lib/shared/errors"
 
 	type ManagedAttemptSummary = {
 		attemptId: string
@@ -29,9 +36,12 @@
 		publishedAttempts: number
 	}
 
-	const panel = $derived((quizUiStore as unknown as Record<string, any>).managedAttemptsPanel ?? null)
+	const panel = $derived(
+		(quizUiStore as unknown as Record<string, any>).managedAttemptsPanel ?? null
+	)
 	const attempts = $derived(
-		((quizUiStore as unknown as Record<string, any>).managedAttempts ?? []) as ManagedAttemptSummary[]
+		((quizUiStore as unknown as Record<string, any>).managedAttempts ??
+			[]) as ManagedAttemptSummary[]
 	)
 
 	let isLoading = $state(false)
@@ -41,34 +51,34 @@
 
 	const formatDate = (value: string | null) => {
 		if (!value) {
-			return '-'
+			return "-"
 		}
 
-		return new Intl.DateTimeFormat('es-CL', {
-			dateStyle: 'medium',
-			timeStyle: 'short'
+		return new Intl.DateTimeFormat("es-CL", {
+			dateStyle: "medium",
+			timeStyle: "short",
 		}).format(new Date(value))
 	}
 
 	const formatGrade = (value: number | null) => {
 		if (value === null) {
-			return '-'
+			return "-"
 		}
 
-		return new Intl.NumberFormat('es-CL', {
+		return new Intl.NumberFormat("es-CL", {
 			minimumFractionDigits: 1,
-			maximumFractionDigits: 2
+			maximumFractionDigits: 2,
 		}).format(value)
 	}
 
 	const formatDateForCsv = (value: string | null) => {
 		if (!value) {
-			return ''
+			return ""
 		}
 
-		return new Intl.DateTimeFormat('es-CL', {
-			dateStyle: 'short',
-			timeStyle: 'medium'
+		return new Intl.DateTimeFormat("es-CL", {
+			dateStyle: "short",
+			timeStyle: "medium",
 		}).format(new Date(value))
 	}
 
@@ -76,32 +86,32 @@
 
 	const downloadGradesCsv = () => {
 		if (!panel || attempts.length === 0) {
-			toast.error('No hay intentos para exportar.')
+			toast.error("No hay intentos para exportar.")
 			return
 		}
 
-		const header = ['nombre', 'hora_inicio', 'hora_entrega', 'nota']
+		const header = ["nombre", "hora_inicio", "hora_entrega", "nota"]
 		const rows = attempts.map(attempt => [
 			attempt.studentName,
 			formatDateForCsv(attempt.startedAt),
 			formatDateForCsv(attempt.submittedAt),
-			attempt.grade === null ? '' : String(attempt.grade)
+			attempt.grade === null ? "" : String(attempt.grade),
 		])
 
 		const csvContent = [header, ...rows]
-			.map(row => row.map(cell => escapeCsvCell(cell)).join(','))
-			.join('\n')
+			.map(row => row.map(cell => escapeCsvCell(cell)).join(","))
+			.join("\n")
 
-		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
 		const url = URL.createObjectURL(blob)
-		const anchor = document.createElement('a')
+		const anchor = document.createElement("a")
 		const safeTitle = panel.title
 			.toLowerCase()
-			.replaceAll(/[^a-z0-9]+/g, '-')
-			.replaceAll(/(^-|-$)/g, '')
+			.replaceAll(/[^a-z0-9]+/g, "-")
+			.replaceAll(/(^-|-$)/g, "")
 
 		anchor.href = url
-		anchor.download = `notas-${safeTitle || 'quiz'}.csv`
+		anchor.download = `notas-${safeTitle || "quiz"}.csv`
 		document.body.appendChild(anchor)
 		anchor.click()
 		document.body.removeChild(anchor)
@@ -114,9 +124,9 @@
 		}
 
 		isLoading = true
-		const { value, error } = await (quizService as Record<string, any>).getManagedAttempts(
-			panel.quizId
-		)
+		const { value, error } = await (
+			quizService as Record<string, any>
+		).getManagedAttempts(panel.quizId)
 
 		if (error) {
 			toast.error(toUserMessage(error))
@@ -134,7 +144,7 @@
 		}
 
 		const confirmed = window.confirm(
-			'Esta accion cerrara el quiz, finalizara intentos en progreso y publicara resultados para todos los intentos enviados.\n\nLuego nadie podra unirse al quiz.'
+			"Esta accion cerrara el quiz, finalizara intentos en progreso y publicara resultados para todos los intentos enviados.\n\nLuego nadie podra unirse al quiz."
 		)
 
 		if (!confirmed) {
@@ -170,20 +180,21 @@
 
 	const getResultStatus = (attempt: ManagedAttemptSummary) => {
 		if (attempt.resultsViewedAt) {
-			return 'Visto'
+			return "Visto"
 		}
 
 		if (attempt.resultsReleasedAt) {
-			return 'Liberado'
+			return "Liberado"
 		}
 
-		return 'Pendiente'
+		return "Pendiente"
 	}
 
-	const isInProgress = (attempt: ManagedAttemptSummary) => attempt.submittedAt === null
+	const isInProgress = (attempt: ManagedAttemptSummary) =>
+		attempt.submittedAt === null
 
 	const getAttemptStatusLabel = (attempt: ManagedAttemptSummary) =>
-		isInProgress(attempt) ? 'En progreso' : 'Enviado'
+		isInProgress(attempt) ? "En progreso" : "Enviado"
 
 	onMount(() => {
 		void loadAttempts()
@@ -226,17 +237,25 @@
 					disabled={isLoading || isFinalizingAndPublishing}
 				>
 					{isFinalizingAndPublishing
-						? 'Finalizando y publicando...'
-						: 'Finalizar y publicar resultados'}
+						? "Finalizando y publicando..."
+						: "Finalizar y publicar resultados"}
 				</button>
-				<button class="btn-secondary" type="button" onclick={loadAttempts} disabled={isLoading}>
+				<button
+					class="btn-secondary"
+					type="button"
+					onclick={loadAttempts}
+					disabled={isLoading}
+				>
 					<RefreshCcw size={14} class="mr-1 inline" />
 					Actualizar
 				</button>
 				<button
 					class="btn-tertiary"
 					type="button"
-					onclick={() => (quizUiStore as unknown as Record<string, any>).closeManagedAttemptsPanel()}
+					onclick={() =>
+						(
+							quizUiStore as unknown as Record<string, any>
+						).closeManagedAttemptsPanel()}
 				>
 					Volver
 				</button>
@@ -269,30 +288,43 @@
 										<UserRoundCheck size={14} class="text-zinc-500" />
 										<div>
 											<p class="m-0">{attempt.studentName}</p>
-											<p class="m-0 text-xs text-zinc-500">@{attempt.studentUsername}</p>
+											<p class="m-0 text-xs text-zinc-500">
+												@{attempt.studentUsername}
+											</p>
 										</div>
 									</div>
 								</td>
 								<td class="border border-zinc-300 bg-white p-2 text-zinc-800">
 									{#if isInProgress(attempt)}
 										<span class="inline-flex items-center gap-1 text-amber-700">
-											<Clock3 size={14} /> {getAttemptStatusLabel(attempt)}
+											<Clock3 size={14} />
+											{getAttemptStatusLabel(attempt)}
 										</span>
 									{:else}
-										<span class="text-emerald-700">{getAttemptStatusLabel(attempt)}</span>
+										<span class="text-emerald-700"
+											>{getAttemptStatusLabel(attempt)}</span
+										>
 									{/if}
 								</td>
-								<td class="border border-zinc-300 bg-white p-2 text-zinc-800">{formatDate(attempt.startedAt)}</td>
-								<td class="border border-zinc-300 bg-white p-2 text-zinc-800">{formatDate(attempt.submittedAt)}</td>
-								<td class="border border-zinc-300 bg-white p-2 text-zinc-800">{formatGrade(attempt.grade)}</td>
+								<td class="border border-zinc-300 bg-white p-2 text-zinc-800"
+									>{formatDate(attempt.startedAt)}</td
+								>
+								<td class="border border-zinc-300 bg-white p-2 text-zinc-800"
+									>{formatDate(attempt.submittedAt)}</td
+								>
+								<td class="border border-zinc-300 bg-white p-2 text-zinc-800"
+									>{formatGrade(attempt.grade)}</td
+								>
 								<td class="border border-zinc-300 bg-white p-2 text-zinc-800">
 									{#if attempt.resultsViewedAt}
 										<span class="inline-flex items-center gap-1 text-zinc-700">
-											<Eye size={14} /> {getResultStatus(attempt)}
+											<Eye size={14} />
+											{getResultStatus(attempt)}
 										</span>
 									{:else if attempt.resultsReleasedAt}
 										<span class="inline-flex items-center gap-1 text-emerald-700">
-											<CheckCircle2 size={14} /> {getResultStatus(attempt)}
+											<CheckCircle2 size={14} />
+											{getResultStatus(attempt)}
 										</span>
 									{:else}
 										<span class="text-amber-700">{getResultStatus(attempt)}</span>

@@ -1,6 +1,6 @@
-export type QuizMode = 'traditional' | 'certainty'
+export type QuizMode = "traditional" | "certainty"
 
-export type QuizKind = 'Traditional' | 'Certainly'
+export type QuizKind = "Traditional" | "Certainly"
 
 export type CertaintyWeight = {
 	correct: number
@@ -101,9 +101,9 @@ export type QuizParticipant = {
 	closedAt: string | null
 }
 
-export type AttemptStatus = 'in_progress' | 'submitted'
+export type AttemptStatus = "in_progress" | "submitted"
 
-export type AttemptCertaintyLevel = 'low' | 'medium' | 'high'
+export type AttemptCertaintyLevel = "low" | "medium" | "high"
 
 export type AttemptAnswer = {
 	questionId: string

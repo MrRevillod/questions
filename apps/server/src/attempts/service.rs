@@ -157,7 +157,7 @@ impl AttemptService {
             if let AppError::Database(sqlx::Error::RowNotFound) = error {
                 AppError::Attempt(AttemptError::AlreadySubmitted)
             } else {
-                error.into()
+                error
             }
         })?;
         let quiz = self.require_quiz(&attempt.quiz_id).await?;
@@ -196,7 +196,7 @@ impl AttemptService {
                 if let AppError::Database(sqlx::Error::RowNotFound) = error {
                     AppError::Attempt(AttemptError::AlreadySubmitted)
                 } else {
-                    error.into()
+                    error
                 }
             })?;
 
@@ -290,7 +290,8 @@ impl AttemptService {
             return Err(AttemptError::ResultAlreadyViewed.into());
         }
 
-        let Some(consumed_attempt) = self.attempts.mark_results_viewed_once(&attempt.id).await? else {
+        let Some(consumed_attempt) = self.attempts.mark_results_viewed_once(&attempt.id).await?
+        else {
             let Some(recheck_attempt) = self.attempts.find_by_id(&attempt.id).await? else {
                 return Err(AttemptError::NotFound(attempt.id.to_string()).into());
             };
@@ -345,7 +346,8 @@ impl AttemptService {
             return Err(AttemptError::ResultAlreadyViewed.into());
         }
 
-        let Some(consumed_attempt) = self.attempts.mark_results_viewed_once(&attempt.id).await? else {
+        let Some(consumed_attempt) = self.attempts.mark_results_viewed_once(&attempt.id).await?
+        else {
             let Some(recheck_attempt) = self.attempts.find_by_id(&attempt.id).await? else {
                 return Err(AttemptError::NotFound(attempt.id.to_string()).into());
             };
@@ -463,7 +465,10 @@ impl AttemptService {
             .certainly_table
             .as_ref()
             .map(|table| {
-                i16::max(table.low.correct, i16::max(table.medium.correct, table.high.correct)) as f64
+                i16::max(
+                    table.low.correct,
+                    i16::max(table.medium.correct, table.high.correct),
+                ) as f64
             })
             .unwrap_or(1.0);
 
@@ -484,7 +489,11 @@ impl AttemptService {
         let mut score_points = 0.0;
 
         for question_id in &attempt.question_order {
-            let Some(question) = quiz.questions.iter().find(|question| question.id == *question_id) else {
+            let Some(question) = quiz
+                .questions
+                .iter()
+                .find(|question| question.id == *question_id)
+            else {
                 continue;
             };
 
@@ -584,7 +593,9 @@ impl AttemptService {
             submitted_at,
             evaluated_at,
             score_points: attempt.score_points.unwrap_or(evaluation.score_points),
-            score_points_max: attempt.score_points_max.unwrap_or(evaluation.score_points_max),
+            score_points_max: attempt
+                .score_points_max
+                .unwrap_or(evaluation.score_points_max),
             grade: attempt.grade.unwrap_or(evaluation.grade),
             results_released_at,
             results_viewed_at: attempt.results_viewed_at,

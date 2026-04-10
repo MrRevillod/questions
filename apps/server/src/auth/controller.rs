@@ -28,7 +28,7 @@ impl AuthController {
             return Err(JsonResponse::Unauthorized());
         };
 
-        let response = self.auth_service.refresh(&token).await?;
+        let response = self.auth_service.refresh(token).await?;
 
         Ok(JsonResponse::Ok().data(response))
     }
