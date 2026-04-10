@@ -1,0 +1,25 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: ./apps/server/Dockerfile
+      target: prod
+    image: ${DOCKERHUB_USERNAME}/questions-server:latest
+    volumes: []
+
+  client:
+    build:
+      context: .
+      dockerfile: ./apps/client/Dockerfile
+      target: prod
+    image: ${DOCKERHUB_USERNAME}/questions-client:latest
+    user: root
+    volumes: []
+    environment: []
+
+  nginx:
+    depends_on:
+      server:
+        condition: service_started
+      client:
+        condition: service_started

@@ -1,0 +1,125 @@
+name: Docker Images
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ "v*" ]
+    paths-ignore:
+      - "README.md"
+      - "LICENSE"
+      - "Makefile"
+      - ".diagrams/**"
+      - "**/*.md"
+      - "**/*.txt"
+      - "**/.prettier*"
+      - "**/.editorconfig"
+      - ".gitignore"
+      - ".gitattributes"
+      - "docs/**"
+      - ".docs/**"
+      - ".github/ISSUE_TEMPLATE/**"
+      - ".github/PULL_REQUEST_TEMPLATE*"
+  workflow_dispatch:
+
+concurrency:
+  group: docker-images-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust fmt check
+        run: cargo fmt --check
+
+      - name: Rust clippy
+        run: cargo clippy -- -D warnings
+
+      - name: Rust tests
+        run: cargo test
+
+  client-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install client deps
+        run: pnpm install --frozen-lockfile --ignore-scripts
+        working-directory: apps/client
+
+      - name: Client lint
+        run: pnpm run lint
+        working-directory: apps/client
+
+      - name: Client check
+        run: pnpm run check
+        working-directory: apps/client
+
+  build-and-push:
+    needs: [ server-ci, client-ci ]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: server
+            dockerfile: ./apps/server/Dockerfile
+            image_suffix: questions-server
+          - service: client
+            dockerfile: ./apps/client/Dockerfile
+            image_suffix: questions-client
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image_suffix }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: prod
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
