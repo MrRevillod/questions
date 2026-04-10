@@ -2,12 +2,12 @@ name: Rust
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
     paths-ignore:
       - ".github/workflows/cd/**"
       - "apps/server/cli/**"
   pull_request:
-    branches: [main]
+    branches: [ main ]
     paths-ignore:
       - ".github/workflows/cd/**"
       - "apps/server/cli/**"
