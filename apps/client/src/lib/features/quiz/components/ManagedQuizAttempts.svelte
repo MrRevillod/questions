@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import { CheckCircle2, Clock3, Eye, RefreshCcw, UserRoundCheck } from 'lucide-svelte'
+	import { CheckCircle2, Clock3, Download, Eye, RefreshCcw, UserRoundCheck } from 'lucide-svelte'
 	import { toast } from 'svelte-sonner'
 	import { quizService } from '$lib/features/quiz/quiz.service'
 	import { quizUiStore } from '$lib/features/quiz/quiz.store.svelte'
@@ -37,6 +37,7 @@
 	let isLoading = $state(false)
 
 	let isFinalizingAndPublishing = $state(false)
+	const POLL_INTERVAL_MS = 10_000
 
 	const formatDate = (value: string | null) => {
 		if (!value) {
@@ -58,6 +59,53 @@
 			minimumFractionDigits: 1,
 			maximumFractionDigits: 2
 		}).format(value)
+	}
+
+	const formatDateForCsv = (value: string | null) => {
+		if (!value) {
+			return ''
+		}
+
+		return new Intl.DateTimeFormat('es-CL', {
+			dateStyle: 'short',
+			timeStyle: 'medium'
+		}).format(new Date(value))
+	}
+
+	const escapeCsvCell = (value: string) => `"${value.replaceAll('"', '""')}"`
+
+	const downloadGradesCsv = () => {
+		if (!panel || attempts.length === 0) {
+			toast.error('No hay intentos para exportar.')
+			return
+		}
+
+		const header = ['nombre', 'hora_inicio', 'hora_entrega', 'nota']
+		const rows = attempts.map(attempt => [
+			attempt.studentName,
+			formatDateForCsv(attempt.startedAt),
+			formatDateForCsv(attempt.submittedAt),
+			attempt.grade === null ? '' : String(attempt.grade)
+		])
+
+		const csvContent = [header, ...rows]
+			.map(row => row.map(cell => escapeCsvCell(cell)).join(','))
+			.join('\n')
+
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+		const url = URL.createObjectURL(blob)
+		const anchor = document.createElement('a')
+		const safeTitle = panel.title
+			.toLowerCase()
+			.replaceAll(/[^a-z0-9]+/g, '-')
+			.replaceAll(/(^-|-$)/g, '')
+
+		anchor.href = url
+		anchor.download = `notas-${safeTitle || 'quiz'}.csv`
+		document.body.appendChild(anchor)
+		anchor.click()
+		document.body.removeChild(anchor)
+		URL.revokeObjectURL(url)
 	}
 
 	const loadAttempts = async () => {
@@ -139,6 +187,18 @@
 
 	onMount(() => {
 		void loadAttempts()
+
+		const interval = window.setInterval(() => {
+			if (isLoading || isFinalizingAndPublishing || !panel) {
+				return
+			}
+
+			void loadAttempts()
+		}, POLL_INTERVAL_MS)
+
+		return () => {
+			window.clearInterval(interval)
+		}
 	})
 </script>
 
@@ -150,6 +210,15 @@
 				<h3 class="mt-1 mb-0 text-xl text-black">{panel.title}</h3>
 			</div>
 			<div class="flex flex-wrap items-center gap-2">
+				<button
+					class="btn-secondary"
+					type="button"
+					onclick={downloadGradesCsv}
+					disabled={isLoading || attempts.length === 0}
+				>
+					<Download size={14} class="mr-1 inline" />
+					Descargar CSV
+				</button>
 				<button
 					class="btn-primary"
 					type="button"
