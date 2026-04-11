@@ -80,10 +80,10 @@ jobs:
         include:
           - service: server
             dockerfile: ./apps/server/Dockerfile
-            image_suffix: questions-server
+            image_suffix: ramtun-server
           - service: client
             dockerfile: ./apps/client/Dockerfile
-            image_suffix: questions-client
+            image_suffix: ramtun-client
 
     steps:
       - name: Checkout

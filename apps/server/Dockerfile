@@ -43,7 +43,7 @@ RUN apk add --no-cache \
 WORKDIR /app
 COPY . .
 
-RUN cargo build -p server --bin server --release
+RUN cargo build -p server --release
 
 # ==============================================================================
 # Production Stage

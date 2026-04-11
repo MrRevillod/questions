@@ -1,25 +1,36 @@
 services:
   server:
+    image: ${DOCKERHUB_USERNAME}/ramtun-server:latest
     build:
       context: .
       dockerfile: ./apps/server/Dockerfile
       target: prod
-    image: ${DOCKERHUB_USERNAME}/questions-server:latest
     volumes: []
 
   client:
+    image: ${DOCKERHUB_USERNAME}/ramtun-client:latest
     build:
       context: .
       dockerfile: ./apps/client/Dockerfile
       target: prod
-    image: ${DOCKERHUB_USERNAME}/questions-client:latest
     user: root
     volumes: []
     environment: []
 
-  nginx:
-    depends_on:
-      server:
-        condition: service_started
-      client:
-        condition: service_started
+  postgres:
+    image: postgres:16-alpine
+    container_name: ramtun-postgres
+    command: postgres -c log_min_messages=ERROR -c log_statement=none -c log_duration=off -c log_min_duration_statement=-1 -c log_checkpoints=off
+    ports:
+      - "5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

@@ -1,6 +1,6 @@
 services:
   server:
-    container_name: questions-server
+    container_name: ramtun-server
     build:
       context: .
       dockerfile: ./apps/server/Dockerfile
@@ -23,13 +23,13 @@ services:
     ports:
       - "8000"
     networks:
-      - questions-network
+      - ramtun-network
     volumes:
       - ./:/app
       - server_target:/app/target
 
   nginx:
-    container_name: questions-nginx
+    container_name: ramtun-nginx
     image: nginx:alpine
     ports:
       - "80:80"
@@ -41,39 +41,36 @@ services:
       client:
         condition: service_healthy
     networks:
-      - questions-network
+      - ramtun-network
 
   postgres:
     image: postgres:16-alpine
-    container_name: questions-postgres
-    command: postgres -c log_min_messages=ERROR -c log_statement=none -c log_duration=off -c log_min_duration_statement=-1 -c log_checkpoints=off
+    container_name: ramtun-postgres
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     ports:
       - "5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf
     env_file:
       - .env
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB_NAME}
     networks:
-      - questions-network
+      - ramtun-network
     healthcheck:
-      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}'" ]
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'" ]
       interval: 5s
       timeout: 5s
       retries: 5
       start_period: 10s
 
   client:
+    container_name: ramtun-client
     build:
       context: .
       dockerfile: apps/client/Dockerfile
       args:
         UID: ${UID:-1000}
         GID: ${GID:-1000}
-    container_name: questions-client
     user: "${UID:-1000}:${GID:-1000}"
     env_file:
       - .env
@@ -93,10 +90,10 @@ services:
       retries: 10
       start_period: 40s
     networks:
-      - questions-network
+      - ramtun-network
 
 networks:
-  questions-network:
+  ramtun-network:
     driver: bridge
 
 volumes:

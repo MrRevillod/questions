@@ -8,8 +8,8 @@ pub struct Database {
     pool: Arc<PgPool>,
 }
 
-#[derive(Clone, Deserialize)]
 #[config(key = "postgres-db")]
+#[derive(Clone, Deserialize)]
 pub struct DatabaseConfig {
     pub uri: String,
     pub migrations_path: String,
@@ -26,7 +26,10 @@ impl Database {
             .acquire_timeout(Duration::from_millis(db_conf.acquire_timeout_ms))
             .connect(&db_conf.uri)
             .await
-            .expect("Failed to connect to the database");
+            .inspect_err(|err| {
+                tracing::error!("Failed to connect to PostgreSQL database: {}", err);
+            })
+            .expect("Failed to create database connection pool");
 
         let migrator = Migrator::new(Path::new(&db_conf.migrations_path))
             .await

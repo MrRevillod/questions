@@ -33,11 +33,11 @@ clean:
 	docker compose down -v
 
 clean-db:
-	docker exec questions-postgres psql -U user -d database -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+	docker exec ramtun-postgres psql -U user -d database -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 	cd $(SERVER) && sqlx migrate run --source ./config/migrations --database-url $(LOCAL_POSTGRES_DATABASE_URL)
 
 db:
-	docker exec -it questions-postgres /bin/bash -c "psql -U user -d database"
+	docker exec -it ramtun-postgres /bin/bash -c "psql -U user -d ramtun"
 
 fmt:
 	cargo fmt --all
