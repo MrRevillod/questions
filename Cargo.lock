@@ -2890,7 +2890,7 @@ checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
 [[package]]
 name = "sword"
 version = "0.2.2"
-source = "git+https://github.com/MrRevillod/sword.git#2065ed1964476bb205b4e4ad4693c930d56471ca"
+source = "git+https://github.com/sword-web/sword.git#70fbdd2ad5f718269c017a22056e8f9c9b23dfbd"
 dependencies = [
  "axum",
  "futures-lite",
@@ -2910,7 +2910,7 @@ dependencies = [
 [[package]]
 name = "sword-core"
 version = "0.2.2"
-source = "git+https://github.com/MrRevillod/sword.git#2065ed1964476bb205b4e4ad4693c930d56471ca"
+source = "git+https://github.com/sword-web/sword.git#70fbdd2ad5f718269c017a22056e8f9c9b23dfbd"
 dependencies = [
  "inventory",
  "parking_lot",
@@ -2921,12 +2921,13 @@ dependencies = [
 [[package]]
 name = "sword-layers"
 version = "0.2.2"
-source = "git+https://github.com/MrRevillod/sword.git#2065ed1964476bb205b4e4ad4693c930d56471ca"
+source = "git+https://github.com/sword-web/sword.git#70fbdd2ad5f718269c017a22056e8f9c9b23dfbd"
 dependencies = [
  "axum",
  "axum_responses",
  "byte-unit",
  "serde",
+ "serde_json",
  "thisconfig",
  "tower",
  "tower-cookies",
@@ -2940,7 +2941,7 @@ dependencies = [
 [[package]]
 name = "sword-macros"
 version = "0.2.2"
-source = "git+https://github.com/MrRevillod/sword.git#2065ed1964476bb205b4e4ad4693c930d56471ca"
+source = "git+https://github.com/sword-web/sword.git#70fbdd2ad5f718269c017a22056e8f9c9b23dfbd"
 dependencies = [
  "axum",
  "proc-macro2",
@@ -2951,7 +2952,7 @@ dependencies = [
 [[package]]
 name = "sword-socketio"
 version = "0.2.2"
-source = "git+https://github.com/MrRevillod/sword.git#2065ed1964476bb205b4e4ad4693c930d56471ca"
+source = "git+https://github.com/sword-web/sword.git#70fbdd2ad5f718269c017a22056e8f9c9b23dfbd"
 dependencies = [
  "axum",
  "bytes",
@@ -2963,6 +2964,7 @@ dependencies = [
  "socketioxide-parser-common",
  "socketioxide-parser-msgpack",
  "sword-core",
+ "sword-layers",
  "sword-macros",
  "sword-web",
  "thiserror",
@@ -2973,7 +2975,7 @@ dependencies = [
 [[package]]
 name = "sword-web"
 version = "0.2.2"
-source = "git+https://github.com/MrRevillod/sword.git#2065ed1964476bb205b4e4ad4693c930d56471ca"
+source = "git+https://github.com/sword-web/sword.git#70fbdd2ad5f718269c017a22056e8f9c9b23dfbd"
 dependencies = [
  "axum",
  "axum_responses",

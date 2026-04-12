@@ -345,7 +345,7 @@
 				<div class="mt-4 grid gap-3 sm:grid-cols-2">
 					{#each currentQuestion.images as imageUrl (imageUrl)}
 						<img
-							class="w-full rounded-[4px] border border-zinc-300 bg-white"
+							class="w-full rounded-sm border border-zinc-300 bg-white"
 							src={imageUrl}
 							alt="Imagen de apoyo"
 						/>
@@ -356,7 +356,7 @@
 			<div class="mt-5 grid gap-2.5">
 				{#each currentQuestion.options as option, optionIndex (`${optionIndex}:${option}`)}
 					<button
-						class={`rounded-[4px] border px-4 py-3 text-left text-base leading-relaxed transition ${
+						class={`rounded-sm border px-4 py-3 text-left text-base leading-relaxed transition ${
 							selectedAnswer === optionIndex
 								? "border-black bg-black text-white shadow-[0_10px_20px_rgba(0,0,0,0.08)]"
 								: "border-zinc-300 bg-white text-black hover:border-zinc-400 hover:bg-zinc-50"
@@ -381,7 +381,7 @@
 					<div class="grid gap-2 sm:grid-cols-3">
 						{#each [{ level: "low", label: "Baja" }, { level: "medium", label: "Media" }, { level: "high", label: "Alta" }] as item (item.level)}
 							<button
-								class={`rounded-[4px] border px-4 py-3 text-left transition ${
+								class={`rounded-sm border px-4 py-3 text-left transition ${
 									selectedCertainty === item.level
 										? "border-black bg-black text-white shadow-[0_10px_20px_rgba(0,0,0,0.08)]"
 										: "border-zinc-300 bg-white text-black hover:border-zinc-400 hover:bg-zinc-50"

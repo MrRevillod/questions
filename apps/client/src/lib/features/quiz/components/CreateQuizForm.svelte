@@ -262,7 +262,7 @@
 				>
 					{#if selectedFile}
 						<RefreshCw size={14} class="shrink-0" />
-						<span class="max-w-[14rem] truncate text-left text-sm">
+						<span class="max-w-56 truncate text-left text-sm">
 							{isFileButtonHovered ? "Reemplazar archivo" : selectedFile.name}
 						</span>
 					{:else}
@@ -347,7 +347,7 @@
 								{#snippet children(field)}
 									<label class="grid min-w-0 content-start gap-1.5">
 										<span
-											class="flex min-h-[20px] items-center gap-1.5 text-sm text-zinc-800"
+											class="flex min-h-5 items-center gap-1.5 text-sm text-zinc-800"
 										>
 											<CalendarDays size={15} class="text-black" />
 											Fecha y hora de inicio
@@ -373,7 +373,7 @@
 								{#snippet children(field)}
 									<label class="grid min-w-0 content-start gap-1.5">
 										<span
-											class="flex min-h-[20px] items-center gap-1.5 text-sm text-zinc-800"
+											class="flex min-h-5 items-center gap-1.5 text-sm text-zinc-800"
 										>
 											<Clock3 size={15} class="text-black" />
 											Duracion (min)
@@ -434,7 +434,7 @@
 								>
 									{#each filteredCollaboratorCandidates as user (user.id)}
 										<button
-											class="block w-full rounded-[4px] px-2.5 py-2 text-left text-sm text-zinc-800 hover:bg-zinc-100"
+											class="block w-full rounded-sm px-2.5 py-2 text-left text-sm text-zinc-800 hover:bg-zinc-100"
 											type="button"
 											onclick={() => addCollaborator(user)}
 										>
@@ -447,7 +447,7 @@
 					</label>
 
 					<div
-						class="min-h-0 flex-1 overflow-auto rounded-[4px] border border-zinc-200 bg-white p-2"
+						class="min-h-0 flex-1 overflow-auto rounded-sm border border-zinc-200 bg-white p-2"
 					>
 						{#if isCollaboratorLoading}
 							<p class="m-0 px-2 py-3 text-sm text-zinc-600">
@@ -461,7 +461,7 @@
 							<div class="flex flex-wrap gap-2">
 								{#each selectedCollaborators as user (user.id)}
 									<button
-										class="rounded-[4px] border border-zinc-300 bg-zinc-100 px-2.5 py-1.5 text-xs text-zinc-800 hover:bg-zinc-200"
+										class="rounded-sm border border-zinc-300 bg-zinc-100 px-2.5 py-1.5 text-xs text-zinc-800 hover:bg-zinc-200"
 										type="button"
 										onclick={() => removeCollaborator(user.id)}
 									>

@@ -123,7 +123,7 @@
 						<div class="mt-4 grid gap-3 sm:grid-cols-2">
 							{#each question.images as imageUrl (imageUrl)}
 								<img
-									class="w-full rounded-[4px] border border-zinc-300 bg-white"
+									class="w-full rounded-sm border border-zinc-300 bg-white"
 									src={imageUrl}
 									alt="Imagen de apoyo"
 								/>
@@ -134,7 +134,7 @@
 					<div class="mt-4 grid gap-2.5">
 						{#each question.options as option, optionIndex (`${question.questionId}-${optionIndex}`)}
 							<div
-								class={`rounded-[4px] border px-4 py-3 text-left text-base leading-relaxed ${getOptionClass(optionIndex, question.correctAnswerIndex, question.answerIndex)}`}
+								class={`rounded-sm border px-4 py-3 text-left text-base leading-relaxed ${getOptionClass(optionIndex, question.correctAnswerIndex, question.answerIndex)}`}
 							>
 								<QuestionRichText text={option} />
 							</div>
