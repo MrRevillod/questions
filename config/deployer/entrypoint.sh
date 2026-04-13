@@ -50,8 +50,36 @@ run_deploy() {
 		exit 1
 	fi
 
+	perm_missing=0
+
+	while IFS= read -r perm; do
+		[ -z "$perm" ] && continue
+		verb=$(printf '%s' "$perm" | awk '{print $1}')
+		resource=$(printf '%s' "$perm" | awk '{print $2}')
+		if ! kubectl auth can-i "$verb" "$resource" -n "$NAMESPACE" >/dev/null 2>&1; then
+			echo "[deploy] missing permission: $verb $resource in namespace $NAMESPACE" >&2
+			perm_missing=1
+		fi
+	done <<'EOF'
+create deployments.apps
+create services
+create ingresses.networking.k8s.io
+get secrets
+create secrets
+get clusters.postgresql.cnpg.io
+create clusters.postgresql.cnpg.io
+EOF
+
+	if [ "$perm_missing" -ne 0 ]; then
+		echo "[deploy] insufficient RBAC permissions; aborting before apply" >&2
+		exit 1
+	fi
+
 	echo "[deploy] applying manifests"
 	kubectl apply -R -f "${MANIFESTS_DIR}"
+
+	echo "[deploy] restarting deployments to pick up secret changes"
+	kubectl -n "${NAMESPACE}" rollout restart deployment/ramtun-server deployment/ramtun-client
 
 	if ! kubectl -n "${NAMESPACE}" rollout status deployment/ramtun-server --timeout=180s; then
 		echo "[deploy] rollout failed for ramtun-server" >&2

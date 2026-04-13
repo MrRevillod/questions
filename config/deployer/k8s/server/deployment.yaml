@@ -17,11 +17,13 @@ spec:
     spec:
       containers:
         - name: server
-          image: ghcr.io/mrrevillod/ramtun-server@sha256:fe03f9b1de9bc467e680028a88c65ac4abc160471189c279de9ac9c731070fd3
+          image: ghcr.io/mrrevillod/ramtun-server:sha-bfd4907
           ports:
             - containerPort: 8000
               name: http
           env:
+            - name: RUST_BACKTRACE
+              value: full
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
@@ -29,12 +31,14 @@ spec:
                   key: username
             - name: POSTGRES_PORT
               value: "5432"
+            - name: POSTGRES_HOST
+              value: postgres-cluster-rw.ramtun.svc.cluster.local
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgres-secret
                   key: password
-            - name: POSTGRES_DB_NAME
+            - name: POSTGRES_DB
               value: ramtun
             - name: JWT_SECRET
               valueFrom:

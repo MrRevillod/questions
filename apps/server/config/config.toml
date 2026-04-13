@@ -1,10 +1,12 @@
 [application]
+name = "Ramtum Server"
+
+[web]
 port = 8000
 host = "0.0.0.0"
-
-[middlewares]
-body-limit = { max-size = "5MB", display = true }
-request-timeout = { enabled = true, timeout = "15s", display = true }
+body-limit = "5MB"
+request-timeout = { enabled = true, timeout = "15s" }
+route-prefix = "/api"
 
 [postgres-db]
 user = "${POSTGRES_USER}"
