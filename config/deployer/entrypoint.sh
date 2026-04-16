@@ -86,7 +86,6 @@ cmd_deploy() {
 
 	ensure_namespace_access
 	kubectl apply -R -f "$md"
-	kubectl -n "$ns" rollout restart deployment/ramtun-server deployment/ramtun-client
 	rollout_with_logs "$ns" ramtun-server app=ramtun-server
 	rollout_with_logs "$ns" ramtun-client app=ramtun-client
 	kubectl -n "$ns" get deploy,svc,ingress,pods
