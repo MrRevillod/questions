@@ -22,6 +22,8 @@ acquire_timeout_ms = 5000
 [auth]
 ldap_url = "${LDAP_URL}"
 ldap_base_dn = "${LDAP_BASE_DN}"
+ldap_admin_user = "${LDAP_ADMIN_USER}"
+ldap_admin_password = "${LDAP_ADMIN_PASSWORD}"
 jwt_secret = "${JWT_SECRET}"
 access_exp_minutes = 15
 refresh_exp_days = 7

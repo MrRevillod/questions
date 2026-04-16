@@ -17,6 +17,8 @@ pub use services::{AuthService, LdapClient};
 #[derive(Clone, Deserialize)]
 pub struct AuthConfig {
     pub ldap_url: String,
+    pub ldap_admin_user: String,
+    pub ldap_admin_password: String,
     pub ldap_base_dn: String,
     pub access_exp_minutes: i64,
     pub refresh_exp_days: i64,

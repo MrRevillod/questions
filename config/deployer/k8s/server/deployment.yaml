@@ -49,3 +49,10 @@ spec:
               value: ldap://ldap.dvizama.svc.cluster.local:389
             - name: LDAP_BASE_DN
               value: dc=inf,dc=uct,dc=cl
+            - name: LDAP_ADMIN_USERNAME
+              value: cn=admin
+            - name: LDAP_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ramtun-secret
+                  key: ldap-admin-password

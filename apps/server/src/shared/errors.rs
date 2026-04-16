@@ -71,4 +71,8 @@ pub enum AppError {
     )]
     #[error("LDAP Email not found")]
     LdapEmailNotFound,
+
+    #[http(code = 500)]
+    #[error("LDAP Error: {0}")]
+    LdapUsernameNotFound(String),
 }
