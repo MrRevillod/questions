@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte"
-	import { Clipboard, ListChecks, RotateCw, UsersRound } from "lucide-svelte"
+	import { Clipboard, ListChecks, RotateCw, Trash2, UsersRound } from "lucide-svelte"
+	import { authStore } from "$lib/features/auth/auth.store.svelte"
 	import { toast } from "svelte-sonner"
 	import { quizService } from "$lib/features/quiz/quiz.service"
 	import { quizUiStore } from "$lib/features/quiz/quiz.store.svelte"
@@ -13,6 +14,7 @@
 
 	let quizzes = $state<QuizSummary[]>([])
 	let isLoading = $state(true)
+	let deletingByQuizId = $state<Record<string, boolean>>({})
 
 	const formatDate = (value: string) =>
 		new Intl.DateTimeFormat("es-CL", {
@@ -33,6 +35,32 @@
 			quiz.id,
 			quiz.title
 		)
+	}
+
+	const canDeleteQuiz = (quiz: QuizSummary) => authStore.user?.id === quiz.ownerId
+
+	const handleDeleteQuiz = async (quiz: QuizSummary) => {
+		const confirmed = window.confirm(
+			"Esta accion eliminara el quiz por completo, incluyendo colaboradores, intentos y respuestas asociadas.\n\nNo se puede deshacer."
+		)
+
+		if (!confirmed) {
+			return
+		}
+
+		deletingByQuizId = { ...deletingByQuizId, [quiz.id]: true }
+
+		const { error } = await quizService.deleteQuiz(quiz.id)
+
+		deletingByQuizId = { ...deletingByQuizId, [quiz.id]: false }
+
+		if (error) {
+			toast.error(toUserMessage(error))
+			return
+		}
+
+		toast.success("Quiz eliminado correctamente.")
+		await loadQuizzes()
 	}
 
 	const loadQuizzes = async () => {
@@ -62,7 +90,7 @@
 			class="btn-secondary"
 			type="button"
 			onclick={loadQuizzes}
-			disabled={isLoading}
+			disabled={isLoading || Object.values(deletingByQuizId).some(Boolean)}
 		>
 			<RotateCw size={14} class="mr-1 inline" />
 			Actualizar
@@ -120,6 +148,17 @@
 									<Clipboard size={14} class="mr-1 inline" />
 									Copiar
 								</button>
+								{#if canDeleteQuiz(quiz)}
+									<button
+										class="btn-secondary text-red-700 hover:text-red-800"
+										type="button"
+										onclick={() => handleDeleteQuiz(quiz)}
+										disabled={deletingByQuizId[quiz.id]}
+									>
+										<Trash2 size={14} class="mr-1 inline" />
+										{deletingByQuizId[quiz.id] ? "Eliminando..." : "Eliminar"}
+									</button>
+								{/if}
 							</div>
 						</div>
 					</article>

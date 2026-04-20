@@ -91,6 +91,25 @@ impl QuizController {
         Ok(JsonResponse::Ok().data(quiz))
     }
 
+    #[delete("/{quizId}")]
+    #[interceptor(AuthzGuard, config = AuthzAction::DeleteManagedQuiz)]
+    #[doc = "Delete an existing quiz. Only the quiz owner can perform this action."]
+    pub async fn delete(&self, req: Request) -> WebResult {
+        let quiz_id = req
+            .param::<Uuid>("quizId")
+            .map_err(|_| QuizError::InvalidId)?;
+
+        let current_user = req
+            .extensions
+            .get::<User>()
+            .cloned()
+            .ok_or_else(JsonResponse::Unauthorized)?;
+
+        self.service.delete_quiz(&current_user, &quiz_id).await?;
+
+        Ok(JsonResponse::Ok().message("Quiz deleted successfully"))
+    }
+
     #[post("/join-by-code")]
     #[interceptor(AuthzGuard, config = AuthzAction::JoinQuizByCode)]
     #[doc = "Join a quiz using a unique code. Requires join quiz permission (student)"]
@@ -98,14 +117,13 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
         let input = req.body_validator::<JoinQuizByCodeRequest>()?;
 
         let preview = self
             .service
-            .get_join_preview(&current_user, &input.code)
+            .get_join_preview(current_user, &input.code)
             .await?;
 
         Ok(JsonResponse::Ok().data(preview))
@@ -122,10 +140,9 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
-        let attempt = self.attempts.start_attempt(&current_user, &quiz_id).await?;
+        let attempt = self.attempts.start_attempt(current_user, &quiz_id).await?;
 
         Ok(JsonResponse::Created().data(attempt))
     }
@@ -140,12 +157,11 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
         let attempts = self
             .attempts
-            .list_managed_quiz_attempts(&current_user, &quiz_id)
+            .list_managed_quiz_attempts(current_user, &quiz_id)
             .await?;
 
         Ok(JsonResponse::Ok().data(attempts))
@@ -165,12 +181,11 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
         let result = self
             .attempts
-            .get_result_for_managed_attempt(&current_user, &quiz_id, &attempt_id)
+            .get_result_for_managed_attempt(current_user, &quiz_id, &attempt_id)
             .await?;
 
         Ok(JsonResponse::Ok().data(result))
@@ -187,12 +202,11 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
         let attempt = self
             .attempts
-            .get_active_attempt_for_quiz(&current_user, &quiz_id)
+            .get_active_attempt_for_quiz(current_user, &quiz_id)
             .await?;
 
         Ok(JsonResponse::Ok().data(attempt))
@@ -208,12 +222,11 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
         let result = self
             .attempts
-            .get_result_for_student(&current_user, &quiz_id)
+            .get_result_for_student(current_user, &quiz_id)
             .await?;
 
         Ok(JsonResponse::Ok().data(result))
@@ -229,12 +242,11 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
         let result = self
             .attempts
-            .finalize_and_publish_quiz(&current_user, &quiz_id)
+            .finalize_and_publish_quiz(current_user, &quiz_id)
             .await?;
 
         Ok(JsonResponse::Ok().data(result))
@@ -246,18 +258,17 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
         let input = req.body_validator::<JoinQuizByCodeRequest>()?;
         let quiz_id = self
             .service
-            .resolve_by_code_for_results(&current_user, &input.code)
+            .resolve_by_code_for_results(current_user, &input.code)
             .await?;
 
         let result = self
             .attempts
-            .get_result_for_student(&current_user, &quiz_id)
+            .get_result_for_student(current_user, &quiz_id)
             .await?;
 
         Ok(JsonResponse::Ok().data(result))
@@ -278,11 +289,10 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
         self.service
-            .add_collaborator(&current_user, &quiz_id, AddCollaboratorRequest { user_id })
+            .add_collaborator(current_user, &quiz_id, AddCollaboratorRequest { user_id })
             .await?;
 
         Ok(JsonResponse::Ok().message("Collaborator added successfully"))
@@ -303,11 +313,10 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
         self.service
-            .remove_collaborator(&current_user, &quiz_id, &user_id)
+            .remove_collaborator(current_user, &quiz_id, &user_id)
             .await?;
 
         Ok(JsonResponse::Ok().message("Collaborator removed successfully"))
@@ -324,12 +333,11 @@ impl QuizController {
         let current_user = req
             .extensions
             .get::<User>()
-            .cloned()
             .ok_or_else(JsonResponse::Unauthorized)?;
 
         let collaborators = self
             .service
-            .list_collaborators(&current_user, &quiz_id)
+            .list_collaborators(current_user, &quiz_id)
             .await?;
 
         Ok(JsonResponse::Ok().data(collaborators))

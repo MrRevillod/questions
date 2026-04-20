@@ -8,6 +8,7 @@ use uuid::Uuid;
 #[serde(rename_all = "camelCase")]
 pub struct QuizSummaryView {
     pub id: Uuid,
+    pub owner_id: Uuid,
     pub title: String,
     pub kind: QuizKind,
     pub join_code: String,
@@ -74,10 +75,11 @@ impl From<Quiz> for QuizSummaryView {
     fn from(quiz: Quiz) -> Self {
         Self {
             id: quiz.id,
+            owner_id: quiz.owner_id,
             title: quiz.title,
             kind: quiz.kind,
             join_code: quiz.join_code,
-            question_count: quiz.questions.len(),
+            question_count: quiz.question_count as usize,
             start_time: quiz.start_time,
             attempt_duration_minutes: quiz.attempt_duration_minutes,
             closed_at: quiz.closed_at,
@@ -111,7 +113,7 @@ impl From<&Quiz> for JoinQuizPreviewView {
             id: quiz.id,
             title: quiz.title.clone(),
             kind: quiz.kind.clone(),
-            question_count: quiz.questions.len(),
+            question_count: quiz.question_count as usize,
             certainly_table: quiz.certainly_table.clone(),
             start_time: quiz.start_time,
             attempt_duration_minutes: quiz.attempt_duration_minutes,

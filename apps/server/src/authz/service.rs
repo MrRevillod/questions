@@ -22,6 +22,7 @@ impl AuthzService {
                     | AuthzAction::SubmitOwnAttempt
                     | AuthzAction::ReadOwnAttemptResult
                     | AuthzAction::FinalizeManagedAttempt
+                    | AuthzAction::DeleteManagedQuiz
                     | AuthzAction::ListUsersAdmin
                     | AuthzAction::ListCollaboratorCandidates
                     | AuthzAction::ManageAssistants
@@ -36,6 +37,7 @@ impl AuthzService {
                     | AuthzAction::ListCollaboratorCandidates
                     | AuthzAction::ManageQuizCollaborators
                     | AuthzAction::FinalizeManagedAttempt
+                    | AuthzAction::DeleteManagedQuiz
             ),
             UserRole::Student => matches!(
                 action,

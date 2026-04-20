@@ -29,6 +29,23 @@ export const parseNumber = (value: string) => {
 	return parsed
 }
 
+export const validateQuestionCount = (
+	questionCount: number,
+	questionBankSize: number
+) =>
+	v.safeParse(
+		v.pipe(
+			v.number("La cantidad de preguntas debe ser numerica."),
+			v.integer("La cantidad de preguntas debe ser un numero entero."),
+			v.minValue(1, "La cantidad de preguntas debe ser al menos 1."),
+			v.maxValue(
+				questionBankSize,
+				"La cantidad de preguntas no puede ser mayor al banco cargado."
+			)
+		),
+		questionCount
+	)
+
 const hasValidQuestionShape = (question: QuizQuestion) => {
 	if (question.options.length < 2) {
 		return false

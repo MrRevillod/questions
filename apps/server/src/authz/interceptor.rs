@@ -95,31 +95,18 @@ impl OnRequestWithConfig<AuthzAction> for AuthzGuard {
             }
         };
 
-        let user = self
-            .users
-            .find_by_id(&claims.user_id)
-            .await?
-            .ok_or_else(|| {
-                tracing::warn!(
-                    method = %method,
-                    path = %path,
-                    action = ?action,
-                    user_id = %claims.user_id,
-                    session_id = %claims.session_id,
-                    "AuthzGuard rejected: actor not found"
-                );
-                AuthzError::ActorNotFound(claims.user_id.to_string())
-            })?;
+        let Some(user) = self.users.find_by_id(&claims.user_id).await? else {
+            tracing::warn!(
+                method = %method,
+                path = %path,
+                action = ?action,
+                user_id = %claims.user_id,
+                session_id = %claims.session_id,
+                "AuthzGuard rejected: actor not found"
+            );
 
-        tracing::debug!(
-            method = %method,
-            path = %path,
-            action = ?action,
-            user_id = %user.id,
-            username = %user.username,
-            role = ?user.role,
-            "AuthzGuard evaluating role access"
-        );
+            return Err(AuthzError::ActorNotFound(claims.user_id.to_string()))?;
+        };
 
         self.authz.authorize_role(&user.role, action)?;
 

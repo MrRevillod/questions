@@ -108,6 +108,7 @@ impl QuizService {
             .updated_at(now)
             .questions(input.questions.iter().map(QuizQuestion::from).collect())
             .attempt_duration_minutes(input.attempt_duration_minutes)
+            .question_count(input.question_count)
             .maybe_certainly_table(input.certainty_config.map(CertainlyTable::from))
             .build();
 
@@ -157,6 +158,10 @@ impl QuizService {
             quiz.attempt_duration_minutes = attempt_duration_minutes;
         }
 
+        if let Some(question_count) = input.question_count {
+            quiz.question_count = question_count;
+        }
+
         if let Some(certainly_config) = input.certainty_config {
             quiz.certainly_table = Some(CertainlyTable::from(certainly_config));
         }
@@ -165,9 +170,26 @@ impl QuizService {
             quiz.questions = questions.iter().map(QuizQuestion::from).collect();
         }
 
+        if quiz.question_count as usize > quiz.questions.len() {
+            return Err(QuizError::InvalidQuestionCount.into());
+        }
+
         let quiz = self.repository.update(&quiz).await?;
 
         Ok(QuizDetailView::from(quiz))
+    }
+
+    pub async fn delete_quiz(&self, current_user: &User, quiz_id: &Uuid) -> AppResult<()> {
+        let quiz = self
+            .policy
+            .require_owner_quiz(current_user, quiz_id)
+            .await?;
+
+        if !self.repository.delete_by_id(&quiz.id).await? {
+            return Err(QuizError::NotFound(quiz_id.to_string()))?;
+        }
+
+        Ok(())
     }
 
     pub async fn add_collaborator(

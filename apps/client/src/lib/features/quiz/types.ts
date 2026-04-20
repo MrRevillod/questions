@@ -25,6 +25,7 @@ export type CreateQuizPayload = {
 	mode: QuizMode
 	startTimeUtc: string
 	attemptDurationMinutes: number
+	questionCount: number
 	collaboratorIds: string[]
 	questions: QuizQuestion[]
 	certaintyConfig: CertaintyConfig | null
@@ -36,6 +37,7 @@ export type JoinQuizPayload = {
 
 export type QuizSummary = {
 	id: string
+	ownerId: string
 	title: string
 	kind: QuizKind
 	joinCode: string

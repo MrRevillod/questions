@@ -51,7 +51,6 @@
 {:else}
 	<section class="grid h-full min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-5">
 		<div class="flex flex-col gap-2.5">
-			<p class="section-kicker m-0">Panel principal</p>
 			<h2
 				class="m-0 flex items-center gap-2 text-xl leading-tight text-black sm:text-2xl"
 			>

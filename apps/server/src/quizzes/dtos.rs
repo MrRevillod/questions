@@ -28,6 +28,13 @@ pub struct CreateQuizRequest {
     ))]
     pub attempt_duration_minutes: i32,
 
+    #[validate(range(
+        min = 1,
+        max = 100,
+        message = "Question count must be between 1 and 100"
+    ))]
+    pub question_count: i32,
+
     #[validate(length(
         min = 1,
         max = 100,
@@ -58,6 +65,13 @@ pub struct UpdateQuizRequest {
         message = "Duration must be between 1 and 240 minutes"
     ))]
     pub attempt_duration_minutes: Option<i32>,
+
+    #[validate(range(
+        min = 1,
+        max = 100,
+        message = "Question count must be between 1 and 100"
+    ))]
+    pub question_count: Option<i32>,
 
     #[validate(length(
         min = 1,
@@ -152,7 +166,8 @@ pub struct AddCollaboratorRequest {
 
 fn validate_create_schema(request: &CreateQuizRequest) -> Result<(), ValidationError> {
     validate_start_time(&request.start_time_utc)?;
-    validate_quiz_mode(&request.mode, request.certainty_config.is_some())
+    validate_quiz_mode(&request.mode, request.certainty_config.is_some())?;
+    validate_question_count(request.question_count, request.questions.len())
 }
 
 fn validate_update_schema(request: &UpdateQuizRequest) -> Result<(), ValidationError> {
@@ -160,7 +175,27 @@ fn validate_update_schema(request: &UpdateQuizRequest) -> Result<(), ValidationE
         validate_start_time(time)?
     }
 
+    if let (Some(question_count), Some(questions)) =
+        (request.question_count, request.questions.as_ref())
+    {
+        validate_question_count(question_count, questions.len())?;
+    }
+
     Ok(())
+}
+
+fn validate_question_count(question_count: i32, bank_size: usize) -> Result<(), ValidationError> {
+    if question_count <= 0 {
+        return Ok(());
+    }
+
+    if question_count as usize <= bank_size {
+        return Ok(());
+    }
+
+    let mut err = ValidationError::new("invalid_question_count");
+    err.message = Some("questionCount cannot be greater than total questions in the bank".into());
+    Err(err)
 }
 
 fn validate_start_time(start_time_utc: &str) -> Result<(), ValidationError> {

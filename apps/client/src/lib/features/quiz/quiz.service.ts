@@ -39,6 +39,12 @@ class QuizService {
 			url: "/quizzes/me",
 		})
 
+	deleteQuiz = async (quizId: string): PromiseResult<void, AppError> =>
+		request<void>({
+			method: "DELETE",
+			url: `/quizzes/${quizId}`,
+		})
+
 	startAttempt = async (quizId: string): PromiseResult<AttemptSnapshot, AppError> =>
 		request<AttemptSnapshot>({
 			method: "POST",

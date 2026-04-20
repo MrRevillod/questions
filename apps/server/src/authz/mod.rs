@@ -22,6 +22,7 @@ pub enum AuthzAction {
     SubmitOwnAttempt,
     ReadOwnAttemptResult,
     FinalizeManagedAttempt,
+    DeleteManagedQuiz,
     ListUsersAdmin,
     ListCollaboratorCandidates,
     ManageAssistants,

@@ -38,8 +38,7 @@
 		class="panel-surface flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
 	>
 		<div>
-			<p class="section-kicker">Área autenticada</p>
-			<h1 class="mt-1 text-2xl leading-tight text-black sm:text-3xl">
+			<h1 class="text-2xl leading-tight text-black sm:text-3xl">
 				Cuestionarios y Tests de Certeza
 			</h1>
 		</div>

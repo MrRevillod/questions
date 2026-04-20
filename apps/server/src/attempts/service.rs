@@ -50,7 +50,8 @@ impl AttemptService {
             return Ok(self.build_snapshot(&quiz, attempt, answers));
         }
 
-        let question_order = shuffled_question_order(&quiz);
+        let mut question_order = shuffled_question_order(&quiz);
+        question_order.truncate(quiz.question_count as usize);
 
         let started_at = Utc::now();
         let expires_at = started_at + Duration::minutes(i64::from(quiz.attempt_duration_minutes));

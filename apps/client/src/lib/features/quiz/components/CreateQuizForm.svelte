@@ -22,6 +22,7 @@
 		parseNumber,
 		parseQuestionsFile,
 		toUtcIso,
+		validateQuestionCount,
 	} from "$lib/features/quiz/utils"
 	import type {
 		CertaintyConfig,
@@ -43,6 +44,7 @@
 			mode: QuizMode
 			startTimeUtc: string
 			attemptDurationMinutes: number
+			questionCount: number
 			collaboratorIds: string[]
 			questions: QuizQuestion[]
 			certaintyConfig: CertaintyConfig | null
@@ -180,9 +182,25 @@
 		const questions = parsedQuestions.questions
 
 		const durationMinutes = parseNumber(output.attemptDurationMinutes)
+		const questionCount = parseNumber(output.questionCount)
 
 		if (!durationMinutes || durationMinutes <= 0) {
 			toast.error("La duracion debe ser mayor que cero.")
+			return
+		}
+
+		if (!questionCount || questionCount <= 0) {
+			toast.error("La cantidad de preguntas debe ser mayor que cero.")
+			return
+		}
+
+		const questionCountValidation = validateQuestionCount(
+			questionCount,
+			questions.length
+		)
+
+		if (!questionCountValidation.success) {
+			toast.error(questionCountValidation.issues[0]?.message ?? "Cantidad invalida")
 			return
 		}
 
@@ -198,6 +216,7 @@
 			mode: output.mode as QuizMode,
 			startTimeUtc: toUtcIso(output.startTimeLocal),
 			attemptDurationMinutes: durationMinutes,
+			questionCount,
 			collaboratorIds: selectedCollaboratorIds,
 			questions,
 			certaintyConfig,
@@ -342,7 +361,9 @@
 						<div>
 							<p class="section-kicker m-0">Programacion</p>
 						</div>
-						<div class="grid gap-3 sm:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+						<div
+							class="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]"
+						>
 							<Field of={createQuizForm} path={["startTimeLocal"]}>
 								{#snippet children(field)}
 									<label class="grid min-w-0 content-start gap-1.5">
@@ -383,6 +404,33 @@
 											class="input-base"
 											type="number"
 											min="1"
+											value={field.input}
+										/>
+										<p
+											class="m-0 text-xs leading-4 text-transparent"
+											aria-hidden="true"
+										>
+											No se permiten fechas ni horas en el pasado.
+										</p>
+										<p class="m-0 min-h-4 text-xs leading-4 text-red-700">
+											{field.errors?.[0] ?? ""}
+										</p>
+									</label>
+								{/snippet}
+							</Field>
+
+							<Field of={createQuizForm} path={["questionCount"]}>
+								{#snippet children(field)}
+									<label class="grid min-w-0 content-start gap-1.5">
+										<span class="min-h-5 text-sm text-zinc-800">
+											Preguntas en la prueba
+										</span>
+										<input
+											{...field.props}
+											class="input-base"
+											type="number"
+											min="1"
+											max="100"
 											value={field.input}
 										/>
 										<p

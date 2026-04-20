@@ -29,5 +29,6 @@ export const DEFAULT_CREATE_QUIZ_INPUT = {
 	mode: "traditional",
 	startTimeLocal: "",
 	attemptDurationMinutes: "30",
+	questionCount: "10",
 	certainty: DEFAULT_CERTAINTY_VALUES,
 } as const

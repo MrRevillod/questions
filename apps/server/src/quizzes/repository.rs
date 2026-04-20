@@ -1,4 +1,4 @@
-use crate::quizzes::{Quiz, QuizCollaboratorEntity};
+use crate::quizzes::{Quiz, QuizCollaborator};
 use crate::shared::{AppResult, Database};
 use crate::users::User;
 
@@ -61,11 +61,12 @@ impl QuizRepository {
                 certainly_table,
                 start_time,
                 attempt_duration_minutes,
+                question_count,
                 closed_at,
                 created_at,
                 updated_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             RETURNING *",
         )
         .bind(quiz.id)
@@ -77,6 +78,7 @@ impl QuizRepository {
         .bind(&quiz.certainly_table)
         .bind(quiz.start_time)
         .bind(quiz.attempt_duration_minutes)
+        .bind(quiz.question_count)
         .bind(quiz.closed_at)
         .bind(quiz.created_at)
         .bind(quiz.updated_at)
@@ -94,8 +96,9 @@ impl QuizRepository {
                   certainly_table = $4,
                   start_time = $5,
                   attempt_duration_minutes = $6,
-                  closed_at = $7,
-                  updated_at = $8
+                  question_count = $7,
+                  closed_at = $8,
+                  updated_at = $9
              WHERE id = $1
              RETURNING *",
         )
@@ -105,6 +108,7 @@ impl QuizRepository {
         .bind(&quiz.certainly_table)
         .bind(quiz.start_time)
         .bind(quiz.attempt_duration_minutes)
+        .bind(quiz.question_count)
         .bind(quiz.closed_at)
         .bind(quiz.updated_at)
         .fetch_one(self.db.get_pool())
@@ -132,8 +136,8 @@ impl QuizRepository {
         &self,
         quiz_id: &Uuid,
         user_id: &Uuid,
-    ) -> AppResult<QuizCollaboratorEntity> {
-        let collaborator = sqlx::query_as::<_, QuizCollaboratorEntity>(
+    ) -> AppResult<QuizCollaborator> {
+        let collaborator = sqlx::query_as::<_, QuizCollaborator>(
             "INSERT INTO quiz_collaborators (quiz_id, user_id, created_at)
              VALUES ($1, $2, $3)
              ON CONFLICT (quiz_id, user_id) DO UPDATE
@@ -207,5 +211,14 @@ impl QuizRepository {
         .await?;
 
         Ok(quiz)
+    }
+
+    pub async fn delete_by_id(&self, quiz_id: &Uuid) -> AppResult<bool> {
+        let result = sqlx::query("DELETE FROM quizzes WHERE id = $1")
+            .bind(quiz_id)
+            .execute(self.db.get_pool())
+            .await?;
+
+        Ok(result.rows_affected() > 0)
     }
 }

@@ -16,6 +16,7 @@ pub struct Quiz {
     pub certainly_table: Option<CertainlyTable>,
     pub start_time: DateTime<Utc>,
     pub attempt_duration_minutes: i32,
+    pub question_count: i32,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub closed_at: Option<DateTime<Utc>>,
@@ -54,7 +55,7 @@ pub struct QuizQuestion {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, FromRow)]
-pub struct QuizCollaboratorEntity {
+pub struct QuizCollaborator {
     pub quiz_id: Uuid,
     pub user_id: Uuid,
     pub created_at: DateTime<Utc>,

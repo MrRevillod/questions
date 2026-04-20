@@ -62,4 +62,11 @@ pub enum QuizError {
     #[http(code = 400, message = "The provided start time is invalid.")]
     #[error("Invalid start time")]
     InvalidStartTime,
+
+    #[http(
+        code = 400,
+        message = "Question count cannot be greater than total questions in the bank."
+    )]
+    #[error("Invalid question count")]
+    InvalidQuestionCount,
 }

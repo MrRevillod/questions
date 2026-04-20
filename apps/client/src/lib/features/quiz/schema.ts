@@ -75,6 +75,14 @@ export const CreateQuizSchema = v.object({
 			"La duracion debe estar entre 1 y 240 minutos."
 		)
 	),
+	questionCount: v.pipe(
+		requiredString("La cantidad de preguntas es obligatoria."),
+		v.regex(/^\d+$/, "La cantidad de preguntas debe ser un numero positivo."),
+		v.check(
+			value => isIntegerInRange(value, 1, 100),
+			"La cantidad de preguntas debe estar entre 1 y 100."
+		)
+	),
 	certainty: CertaintySchema,
 })
 
