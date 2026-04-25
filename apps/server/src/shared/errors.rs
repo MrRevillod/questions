@@ -1,4 +1,7 @@
-use crate::{attempts::AttemptError, authz::AuthzError, quizzes::QuizError, users::UsersError};
+use crate::{
+    attempts::AttemptError, authz::AuthzError, banks::QuestionBankError, courses::CoursesError,
+    quizzes::QuizError, users::UsersError,
+};
 
 use jsonwebtoken::errors::Error as JwtError;
 use ldap3::LdapError;
@@ -27,6 +30,14 @@ pub enum AppError {
     #[http(transparent)]
     #[error(transparent)]
     Users(#[from] UsersError),
+
+    #[http(transparent)]
+    #[error(transparent)]
+    Courses(#[from] CoursesError),
+
+    #[http(transparent)]
+    #[error(transparent)]
+    QuestionBank(#[from] QuestionBankError),
 
     #[http(transparent)]
     #[error(transparent)]

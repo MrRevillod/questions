@@ -2,17 +2,15 @@ mod controller;
 mod dtos;
 mod entity;
 mod errors;
-mod policy;
 mod repository;
-mod service;
+mod services;
 mod views;
 
 pub use dtos::*;
 pub use entity::*;
 pub use errors::*;
-pub use policy::*;
 pub use repository::*;
-pub use service::*;
+pub use services::*;
 pub use views::*;
 
 use controller::QuizController;
@@ -29,5 +27,6 @@ impl Module for QuizzesModule {
         components.register::<QuizPolicy>();
         components.register::<QuizRepository>();
         components.register::<QuizService>();
+        components.register::<QuizCodeGenerator>();
     }
 }

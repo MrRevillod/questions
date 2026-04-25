@@ -7,7 +7,7 @@ mod jsonwebtoken;
 use database::DatabaseConfig;
 use sword::prelude::*;
 
-pub use database::Database;
+pub use database::{Database, TransactionManager, Tx};
 pub use errors::*;
 pub use extensions::*;
 pub use id::{Entity, Id};
@@ -25,5 +25,6 @@ impl Module for SharedModule {
 
     fn register_components(components: &ComponentRegistry) {
         components.register::<JsonWebTokenService>();
+        components.register::<TransactionManager>();
     }
 }

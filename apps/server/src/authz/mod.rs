@@ -10,6 +10,16 @@ pub use service::AuthzService;
 
 #[derive(Clone, Copy, Debug)]
 pub enum AuthzAction {
+    CreateCourse,
+    ListCourses,
+    ReadCourse,
+    DeleteCourse,
+    ManageCourseMembers,
+    CreateQuestionBank,
+    ListQuestionBanks,
+    ReadQuestionBank,
+    UpdateQuestionBank,
+    DeleteQuestionBank,
     CreateQuiz,
     ListManagedQuizzes,
     ReadManagedQuiz,

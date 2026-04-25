@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::quizzes::{Quiz, QuizCollaborator, QuizId};
 use crate::shared::{AppResult, Database};
 use crate::users::{User, UserId};
@@ -7,7 +9,7 @@ use sword::prelude::*;
 
 #[injectable]
 pub struct QuizRepository {
-    db: Database,
+    db: Arc<Database>,
 }
 
 impl QuizRepository {

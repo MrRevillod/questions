@@ -7,15 +7,16 @@ use crate::users::User;
 use chrono::{Duration, Utc};
 use rand::seq::SliceRandom;
 use std::collections::HashMap;
+use std::sync::Arc;
 use sword::prelude::*;
 use uuid::Uuid;
 
 #[injectable]
 pub struct AttemptService {
-    attempts: AttemptRepository,
-    policy: AttemptPolicy,
-    quizzes: QuizRepository,
-    quiz_policy: QuizPolicy,
+    attempts: Arc<AttemptRepository>,
+    policy: Arc<AttemptPolicy>,
+    quizzes: Arc<QuizRepository>,
+    quiz_policy: Arc<QuizPolicy>,
 }
 
 impl AttemptService {

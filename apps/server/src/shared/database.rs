@@ -3,6 +3,10 @@ use sqlx::{PgPool, migrate::Migrator, postgres::PgPoolOptions};
 use std::{path::Path, sync::Arc, time::Duration};
 use sword::prelude::*;
 
+use crate::shared::AppResult;
+
+pub type Tx<'a> = sqlx::Transaction<'a, sqlx::Postgres>;
+
 #[injectable(provider)]
 pub struct Database {
     pool: Arc<PgPool>,
@@ -49,7 +53,7 @@ impl Database {
         }
     }
 
-    pub fn create_uri(db_conf: &DatabaseConfig) -> String {
+    fn create_uri(db_conf: &DatabaseConfig) -> String {
         format!(
             "postgres://{}:{}@{}:{}/{}",
             db_conf.user, db_conf.password, db_conf.host, db_conf.port, db_conf.database
@@ -58,5 +62,20 @@ impl Database {
 
     pub fn get_pool(&self) -> &PgPool {
         &self.pool
+    }
+
+    pub async fn tx(&self) -> AppResult<Tx<'_>> {
+        Ok(self.pool.begin().await?)
+    }
+}
+
+#[injectable]
+pub struct TransactionManager {
+    db: Arc<Database>,
+}
+
+impl TransactionManager {
+    pub async fn begin(&self) -> AppResult<Tx<'_>> {
+        self.db.tx().await
     }
 }

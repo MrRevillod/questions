@@ -10,7 +10,17 @@ impl AuthzService {
         let allowed = match role {
             UserRole::Func => matches!(
                 action,
-                AuthzAction::CreateQuiz
+                AuthzAction::CreateCourse
+                    | AuthzAction::ListCourses
+                    | AuthzAction::ReadCourse
+                    | AuthzAction::DeleteCourse
+                    | AuthzAction::ManageCourseMembers
+                    | AuthzAction::CreateQuestionBank
+                    | AuthzAction::ListQuestionBanks
+                    | AuthzAction::ReadQuestionBank
+                    | AuthzAction::UpdateQuestionBank
+                    | AuthzAction::DeleteQuestionBank
+                    | AuthzAction::CreateQuiz
                     | AuthzAction::ListManagedQuizzes
                     | AuthzAction::ReadManagedQuiz
                     | AuthzAction::UpdateManagedQuiz
@@ -29,7 +39,15 @@ impl AuthzService {
             ),
             UserRole::Assistant => matches!(
                 action,
-                AuthzAction::CreateQuiz
+                AuthzAction::CreateCourse
+                    | AuthzAction::ListCourses
+                    | AuthzAction::ReadCourse
+                    | AuthzAction::CreateQuestionBank
+                    | AuthzAction::ListQuestionBanks
+                    | AuthzAction::ReadQuestionBank
+                    | AuthzAction::UpdateQuestionBank
+                    | AuthzAction::DeleteQuestionBank
+                    | AuthzAction::CreateQuiz
                     | AuthzAction::ListManagedQuizzes
                     | AuthzAction::ReadManagedQuiz
                     | AuthzAction::UpdateManagedQuiz

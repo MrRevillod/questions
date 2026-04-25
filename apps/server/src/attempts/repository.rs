@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::attempts::{Attempt, AttemptAnswerEntity, AttemptId, ManagedAttemptSummaryView};
 use crate::quizzes::QuizId;
 use crate::shared::{AppResult, Database};
@@ -8,7 +10,7 @@ use sword::prelude::*;
 
 #[injectable]
 pub struct AttemptRepository {
-    db: Database,
+    db: Arc<Database>,
 }
 
 impl AttemptRepository {
