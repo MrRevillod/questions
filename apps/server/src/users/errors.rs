@@ -17,4 +17,8 @@ pub enum UsersError {
     )]
     #[error("Only students and assistants can be managed")]
     InvalidAssistantTargetRole,
+
+    #[http(code = 400, message = "Invalid user role provided.")]
+    #[error("Invalid user role provided")]
+    InvalidUserRole,
 }

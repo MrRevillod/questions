@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
-use crate::quizzes::{Quiz, QuizCollaborator, QuizId};
-use crate::shared::{AppResult, Database};
-use crate::users::{User, UserId};
+use crate::banks::QuestionBankId;
+use crate::quizzes::{Quiz, QuizId};
+use crate::shared::{AppResult, Database, Tx};
+use crate::users::UserId;
 
 use chrono::Utc;
 use sword::prelude::*;
@@ -14,33 +15,33 @@ pub struct QuizRepository {
 
 impl QuizRepository {
     pub async fn find_by_id(&self, id: &QuizId) -> AppResult<Option<Quiz>> {
-        let quiz = sqlx::query_as::<_, Quiz>("SELECT * FROM quizzes WHERE id = $1")
-            .bind(id)
-            .fetch_optional(self.db.get_pool())
-            .await?;
+        let quiz = sqlx::query_as::<_, Quiz>(
+            "SELECT * FROM quizzes
+            WHERE id = $1 AND deleted_at IS NULL",
+        )
+        .bind(id)
+        .fetch_optional(self.db.get_pool())
+        .await?;
 
         Ok(quiz)
     }
 
     pub async fn find_by_code(&self, code: &str) -> AppResult<Option<Quiz>> {
-        let quiz = sqlx::query_as::<_, Quiz>("SELECT * FROM quizzes WHERE join_code = $1")
-            .bind(code)
-            .fetch_optional(self.db.get_pool())
-            .await?;
+        let quiz = sqlx::query_as::<_, Quiz>(
+            "SELECT * FROM quizzes WHERE join_code = $1 AND deleted_at IS NULL",
+        )
+        .bind(code)
+        .fetch_optional(self.db.get_pool())
+        .await?;
 
         Ok(quiz)
     }
 
     pub async fn list_managed_by_user(&self, user_id: &UserId) -> AppResult<Vec<Quiz>> {
         let quizzes = sqlx::query_as::<_, Quiz>(
-            "SELECT q.*
-             FROM quizzes q
-             WHERE q.owner_id = $1
-                OR EXISTS (
-                    SELECT 1
-                    FROM quiz_collaborators qc
-                    WHERE qc.quiz_id = q.id AND qc.user_id = $1
-                )
+            "SELECT q.* FROM quizzes q
+             INNER JOIN course_members cm ON cm.course_id = q.course_id
+             WHERE cm.user_id = $1 AND q.deleted_at IS NULL
              ORDER BY q.created_at DESC",
         )
         .bind(user_id)
@@ -50,176 +51,125 @@ impl QuizRepository {
         Ok(quizzes)
     }
 
-    pub async fn create(&self, quiz: Quiz) -> AppResult<Quiz> {
+    pub async fn has_course_access(&self, quiz_id: &QuizId, user_id: &UserId) -> AppResult<bool> {
+        let has_access = sqlx::query_scalar::<_, bool>(
+            "SELECT EXISTS(
+                SELECT 1
+                FROM quizzes q
+                INNER JOIN course_members cm ON cm.course_id = q.course_id
+                WHERE q.id = $1
+                  AND q.deleted_at IS NULL
+                  AND cm.user_id = $2
+            )",
+        )
+        .bind(quiz_id)
+        .bind(user_id)
+        .fetch_one(self.db.get_pool())
+        .await?;
+
+        Ok(has_access)
+    }
+
+    pub async fn save(&self, tx: &mut Tx<'_>, quiz: &Quiz) -> AppResult<Quiz> {
         let quiz = sqlx::query_as::<_, Quiz>(
             "INSERT INTO quizzes (
                 id,
-                owner_id,
+                course_id,
                 title,
                 kind,
                 join_code,
-                questions,
-                certainly_table,
-                start_time,
-                attempt_duration_minutes,
                 question_count,
+                certainty_table,
+                attempt_duration_minutes,
+                starts_at,
                 closed_at,
                 created_at,
-                updated_at
+                deleted_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            ON CONFLICT (id)
+            DO UPDATE SET
+                course_id = EXCLUDED.course_id,
+                title = EXCLUDED.title,
+                kind = EXCLUDED.kind,
+                join_code = EXCLUDED.join_code,
+                question_count = EXCLUDED.question_count,
+                certainty_table = EXCLUDED.certainty_table,
+                attempt_duration_minutes = EXCLUDED.attempt_duration_minutes,
+                starts_at = EXCLUDED.starts_at,
+                closed_at = EXCLUDED.closed_at,
+                created_at = EXCLUDED.created_at,
+                deleted_at = EXCLUDED.deleted_at
             RETURNING *",
         )
         .bind(quiz.id)
-        .bind(quiz.owner_id)
+        .bind(quiz.course_id)
         .bind(&quiz.title)
         .bind(&quiz.kind)
         .bind(&quiz.join_code)
-        .bind(&quiz.questions)
-        .bind(&quiz.certainly_table)
-        .bind(quiz.start_time)
-        .bind(quiz.attempt_duration_minutes)
         .bind(quiz.question_count)
+        .bind(&quiz.certainty_table)
+        .bind(quiz.attempt_duration_minutes)
+        .bind(quiz.starts_at)
         .bind(quiz.closed_at)
         .bind(quiz.created_at)
-        .bind(quiz.updated_at)
-        .fetch_one(self.db.get_pool())
+        .bind(quiz.deleted_at)
+        .fetch_one(&mut **tx)
         .await?;
 
         Ok(quiz)
     }
 
-    pub async fn update(&self, quiz: &Quiz) -> AppResult<Quiz> {
-        let updated = sqlx::query_as::<_, Quiz>(
-            "UPDATE quizzes
-             SET title = $2,
-                  questions = $3,
-                  certainly_table = $4,
-                  start_time = $5,
-                  attempt_duration_minutes = $6,
-                  question_count = $7,
-                  closed_at = $8,
-                  updated_at = $9
-             WHERE id = $1
-             RETURNING *",
-        )
-        .bind(quiz.id)
-        .bind(&quiz.title)
-        .bind(&quiz.questions)
-        .bind(&quiz.certainly_table)
-        .bind(quiz.start_time)
-        .bind(quiz.attempt_duration_minutes)
-        .bind(quiz.question_count)
-        .bind(quiz.closed_at)
-        .bind(quiz.updated_at)
-        .fetch_one(self.db.get_pool())
-        .await?;
-
-        Ok(updated)
-    }
-
-    pub async fn has_attempts(&self, quiz_id: &QuizId) -> AppResult<bool> {
-        let has_attempts = sqlx::query_scalar::<_, bool>(
-            "SELECT EXISTS(
-                SELECT 1
-                FROM quiz_attempts
-                WHERE quiz_id = $1
-            )",
-        )
-        .bind(quiz_id)
-        .fetch_one(self.db.get_pool())
-        .await?;
-
-        Ok(has_attempts)
-    }
-
-    pub async fn add_collaborator(
-        &self,
-        quiz_id: &QuizId,
-        user_id: &UserId,
-    ) -> AppResult<QuizCollaborator> {
-        let collaborator = sqlx::query_as::<_, QuizCollaborator>(
-            "INSERT INTO quiz_collaborators (quiz_id, user_id, created_at)
-             VALUES ($1, $2, $3)
-             ON CONFLICT (quiz_id, user_id) DO UPDATE
-             SET user_id = EXCLUDED.user_id
-             RETURNING *",
-        )
-        .bind(quiz_id)
-        .bind(user_id)
-        .bind(Utc::now())
-        .fetch_one(self.db.get_pool())
-        .await?;
-
-        Ok(collaborator)
-    }
-
-    pub async fn remove_collaborator(&self, quiz_id: &QuizId, user_id: &UserId) -> AppResult<bool> {
-        let result =
-            sqlx::query("DELETE FROM quiz_collaborators WHERE quiz_id = $1 AND user_id = $2")
-                .bind(quiz_id)
-                .bind(user_id)
-                .execute(self.db.get_pool())
-                .await?;
-
-        Ok(result.rows_affected() > 0)
-    }
-
-    pub async fn is_collaborator(&self, quiz_id: &QuizId, user_id: &UserId) -> AppResult<bool> {
-        let exists = sqlx::query_scalar::<_, bool>(
-            "SELECT EXISTS(
-                SELECT 1
-                FROM quiz_collaborators
-                WHERE quiz_id = $1 AND user_id = $2
-            )",
-        )
-        .bind(quiz_id)
-        .bind(user_id)
-        .fetch_one(self.db.get_pool())
-        .await?;
-
-        Ok(exists)
-    }
-
-    pub async fn list_collaborator_users(&self, quiz_id: &QuizId) -> AppResult<Vec<User>> {
-        let users = sqlx::query_as::<_, User>(
-            "SELECT u.*
-             FROM users u
-             INNER JOIN quiz_collaborators qc ON qc.user_id = u.id
-             WHERE qc.quiz_id = $1
-             ORDER BY u.username ASC",
-        )
-        .bind(quiz_id)
-        .fetch_all(self.db.get_pool())
-        .await?;
-
-        Ok(users)
-    }
-
-    pub async fn close_quiz(&self, quiz_id: &QuizId) -> AppResult<Quiz> {
+    pub async fn close_quiz(&self, quiz_id: &QuizId) -> AppResult<()> {
         let now = Utc::now();
 
-        let quiz = sqlx::query_as::<_, Quiz>(
+        sqlx::query(
             "UPDATE quizzes
-             SET closed_at = COALESCE(closed_at, $2),
-                 updated_at = $2
-             WHERE id = $1
-             RETURNING *",
+             SET closed_at = COALESCE(closed_at, $2)
+             WHERE id = $1 AND deleted_at IS NULL",
         )
         .bind(quiz_id)
         .bind(now)
-        .fetch_one(self.db.get_pool())
+        .execute(self.db.get_pool())
         .await?;
 
-        Ok(quiz)
+        Ok(())
     }
 
     pub async fn delete_by_id(&self, quiz_id: &QuizId) -> AppResult<bool> {
-        let result = sqlx::query("DELETE FROM quizzes WHERE id = $1")
-            .bind(quiz_id)
-            .execute(self.db.get_pool())
-            .await?;
+        let result = sqlx::query(
+            "UPDATE quizzes SET deleted_at = $2
+             WHERE id = $1 AND deleted_at IS NULL",
+        )
+        .bind(quiz_id)
+        .bind(Utc::now())
+        .execute(self.db.get_pool())
+        .await?;
 
         Ok(result.rows_affected() > 0)
+    }
+
+    pub async fn set_bank_links(
+        &self,
+        tx: &mut Tx<'_>,
+        quiz_id: &QuizId,
+        bank_ids: &[QuestionBankId],
+    ) -> AppResult<()> {
+        sqlx::query("DELETE FROM quiz_question_banks WHERE quiz_id = $1")
+            .bind(quiz_id)
+            .execute(&mut **tx)
+            .await?;
+
+        for bank_id in bank_ids {
+            sqlx::query(
+                "INSERT INTO quiz_question_banks (quiz_id, question_bank_id) VALUES ($1, $2)",
+            )
+            .bind(quiz_id)
+            .bind(bank_id)
+            .execute(&mut **tx)
+            .await?;
+        }
+
+        Ok(())
     }
 }

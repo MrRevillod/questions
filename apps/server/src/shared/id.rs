@@ -6,7 +6,7 @@ use std::str::FromStr;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use sqlx::encode::IsNull;
 use sqlx::error::BoxDynError;
-use sqlx::postgres::{PgArgumentBuffer, PgTypeInfo, PgValueRef};
+use sqlx::postgres::{PgArgumentBuffer, PgHasArrayType, PgTypeInfo, PgValueRef};
 use sqlx::{Decode, Encode, Postgres, Type};
 use thiserror::Error;
 use uuid::Uuid;
@@ -85,6 +85,12 @@ impl<'de, T: Entity> Deserialize<'de> for Id<T> {
     {
         let value = Uuid::deserialize(deserializer)?;
         Ok(Self::from_uuid(value))
+    }
+}
+
+impl<T: Entity> PgHasArrayType for Id<T> {
+    fn array_type_info() -> PgTypeInfo {
+        <Uuid as PgHasArrayType>::array_type_info()
     }
 }
 

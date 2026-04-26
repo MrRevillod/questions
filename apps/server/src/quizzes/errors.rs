@@ -69,4 +69,11 @@ pub enum QuizError {
     )]
     #[error("Invalid question count")]
     InvalidQuestionCount,
+
+    #[http(
+        code = 400,
+        message = "One or more banks are invalid for the selected course."
+    )]
+    #[error("Banks are not valid for course")]
+    InvalidBanksForCourse,
 }

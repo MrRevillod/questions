@@ -1,4 +1,6 @@
-use crate::users::UserRole;
+use std::str::FromStr;
+
+use crate::users::{UserFilter, UserRole, UsersError};
 use serde::Deserialize;
 use validator::Validate;
 
@@ -26,6 +28,36 @@ impl From<ManageableUserRole> for UserRole {
         match value {
             ManageableUserRole::Student => Self::Student,
             ManageableUserRole::Assistant => Self::Assistant,
+        }
+    }
+}
+
+impl FromStr for UserRole {
+    type Err = UsersError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "student" => Ok(Self::Student),
+            "func" => Ok(Self::Func),
+            "assistant" => Ok(Self::Assistant),
+            "admin" => Ok(Self::Admin),
+            _ => Err(UsersError::InvalidUserRole),
+        }
+    }
+}
+
+impl From<SearchUsersQuery> for UserFilter {
+    fn from(value: SearchUsersQuery) -> Self {
+        let roles = value.roles.as_ref().map(|roles| {
+            roles
+                .split(',')
+                .filter_map(|r| UserRole::from_str(r.trim()).ok())
+                .collect::<Vec<_>>()
+        });
+
+        UserFilter {
+            search: value.search,
+            roles,
         }
     }
 }

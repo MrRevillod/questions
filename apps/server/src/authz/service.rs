@@ -26,12 +26,6 @@ impl AuthzService {
                     | AuthzAction::UpdateManagedQuiz
                     | AuthzAction::ManageQuizCollaborators
                     | AuthzAction::JoinQuizByCode
-                    | AuthzAction::StartAttempt
-                    | AuthzAction::ListManagedQuizAttempts
-                    | AuthzAction::SaveOwnAttemptAnswer
-                    | AuthzAction::SubmitOwnAttempt
-                    | AuthzAction::ReadOwnAttemptResult
-                    | AuthzAction::FinalizeManagedAttempt
                     | AuthzAction::DeleteManagedQuiz
                     | AuthzAction::ListUsersAdmin
                     | AuthzAction::ListCollaboratorCandidates
@@ -51,20 +45,12 @@ impl AuthzService {
                     | AuthzAction::ListManagedQuizzes
                     | AuthzAction::ReadManagedQuiz
                     | AuthzAction::UpdateManagedQuiz
-                    | AuthzAction::ListManagedQuizAttempts
                     | AuthzAction::ListCollaboratorCandidates
                     | AuthzAction::ManageQuizCollaborators
-                    | AuthzAction::FinalizeManagedAttempt
                     | AuthzAction::DeleteManagedQuiz
             ),
-            UserRole::Student => matches!(
-                action,
-                AuthzAction::JoinQuizByCode
-                    | AuthzAction::StartAttempt
-                    | AuthzAction::SaveOwnAttemptAnswer
-                    | AuthzAction::SubmitOwnAttempt
-                    | AuthzAction::ReadOwnAttemptResult
-            ),
+            UserRole::Student => matches!(action, AuthzAction::JoinQuizByCode),
+            UserRole::Admin => true,
         };
 
         if !allowed {

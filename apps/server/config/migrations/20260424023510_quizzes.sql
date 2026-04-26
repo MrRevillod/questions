@@ -49,5 +49,7 @@ CREATE INDEX idx_quizzes_deleted_at ON quizzes(deleted_at);
 
 CREATE INDEX idx_quiz_question_banks_quiz_id ON quiz_question_banks(quiz_id);
 CREATE INDEX idx_quiz_question_banks_question_bank_id ON quiz_question_banks(question_bank_id);
-CREATE INDEX idx_question_bank_snapshots_quiz_id ON question_bank_snapshots(quiz_id);
+CREATE UNIQUE INDEX idx_question_bank_snapshots_quiz_id_active_unique
+ON question_bank_snapshots(quiz_id)
+WHERE deleted_at IS NULL;
 CREATE INDEX idx_question_bank_snapshots_deleted_at ON question_bank_snapshots(deleted_at);

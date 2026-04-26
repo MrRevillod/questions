@@ -34,7 +34,7 @@ impl UsersController {
     #[doc = "List all users in system (admin only) with all details."]
     pub async fn list_users(&self, req: Request) -> WebResult {
         let query = req.query::<SearchUsersQuery>()?.unwrap_or_default();
-        let users = self.service.list_users_admin(query).await?;
+        let users = self.service.list_users(query).await?;
 
         Ok(JsonResponse::Ok().data(users))
     }

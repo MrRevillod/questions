@@ -1,6 +1,5 @@
 use crate::{
     courses::CourseId,
-    quizzes::QuizId,
     shared::{Entity, Id},
 };
 
@@ -38,12 +37,4 @@ pub struct QuestionBankQuestion {
     pub options: Vec<String>,
     pub answer_index: i16,
     pub images: Vec<String>,
-}
-
-#[derive(Clone, Debug, FromRow)]
-pub struct LinkedQuiz {
-    pub id: QuizId,
-    pub question_count: i16,
-    pub starts_at: DateTime<Utc>,
-    pub closed_at: Option<DateTime<Utc>>,
 }

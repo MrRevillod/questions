@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::banks::{QuestionBank, QuestionBankError, QuestionBankId, QuestionBankRepository};
 use crate::courses::{CourseId, CourseRepository};
 use crate::shared::AppResult;
@@ -7,8 +9,8 @@ use sword::prelude::*;
 
 #[injectable]
 pub struct QuestionBankPolicy {
-    repository: QuestionBankRepository,
-    courses: CourseRepository,
+    repository: Arc<QuestionBankRepository>,
+    courses: Arc<CourseRepository>,
 }
 
 impl QuestionBankPolicy {

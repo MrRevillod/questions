@@ -1,12 +1,12 @@
 use crate::{
+    courses::CourseId,
     shared::{Entity, Id},
-    users::UserId,
 };
+
 use bon::Builder;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Type};
-use uuid::Uuid;
 
 pub type QuizId = Id<Quiz>;
 
@@ -14,18 +14,17 @@ pub type QuizId = Id<Quiz>;
 pub struct Quiz {
     #[builder(default = QuizId::new())]
     pub id: QuizId,
-    pub owner_id: UserId,
+    pub course_id: CourseId,
     pub title: String,
     pub kind: QuizKind,
     pub join_code: String,
-    pub questions: Vec<QuizQuestion>,
-    pub certainly_table: Option<CertainlyTable>,
-    pub start_time: DateTime<Utc>,
-    pub attempt_duration_minutes: i32,
-    pub question_count: i32,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
+    pub question_count: i16,
+    pub certainty_table: Option<CertaintyTable>,
+    pub attempt_duration_minutes: i16,
+    pub starts_at: DateTime<Utc>,
     pub closed_at: Option<DateTime<Utc>>,
+    pub created_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
 }
 
 impl Entity for Quiz {
@@ -35,40 +34,24 @@ impl Entity for Quiz {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
-#[sqlx(type_name = "quiz_kind")]
+#[sqlx(type_name = "quiz_kind", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum QuizKind {
     Traditional,
-    Certainly,
+    Certainty,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
-#[sqlx(type_name = "certainly_level")]
-pub struct CertainlyLevel {
+#[sqlx(type_name = "certainty_score")]
+pub struct CertaintyScore {
     pub correct: i16,
     pub incorrect: i16,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type)]
-#[sqlx(type_name = "certainly_table")]
-pub struct CertainlyTable {
-    pub low: CertainlyLevel,
-    pub medium: CertainlyLevel,
-    pub high: CertainlyLevel,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, Type)]
-#[sqlx(type_name = "question")]
-pub struct QuizQuestion {
-    pub id: Uuid,
-    pub question: String,
-    pub options: Vec<String>,
-    pub answer: i16,
-    pub images: Vec<String>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, FromRow)]
-pub struct QuizCollaborator {
-    pub quiz_id: Uuid,
-    pub user_id: Uuid,
-    pub created_at: DateTime<Utc>,
+#[sqlx(type_name = "certainty_table")]
+pub struct CertaintyTable {
+    pub low: CertaintyScore,
+    pub medium: CertaintyScore,
+    pub high: CertaintyScore,
 }

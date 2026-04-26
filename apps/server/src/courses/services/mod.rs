@@ -54,7 +54,7 @@ impl CoursesService {
 
         let mut tx = self.tx.begin().await?;
 
-        self.repository.create(&mut tx, &course).await?;
+        self.repository.save(&mut tx, &course).await?;
 
         let creator = CourseMember::builder()
             .course_id(course.id)
@@ -163,13 +163,12 @@ impl CoursesService {
             .await?
             .ok_or(CoursesError::MemberNotFound)?;
 
-        if member.role == UserRole::Func
-            && self
-                .repository
-                .count_members_by_role(course_id, UserRole::Func)
-                .await?
-                <= 1
-        {
+        let role_member_count = self
+            .repository
+            .count_members_by_role(course_id, member.role.clone())
+            .await?;
+
+        if member.role == UserRole::Func && role_member_count <= 1 {
             return Err(CoursesError::CannotRemoveLastFuncMember)?;
         }
 

@@ -10,7 +10,7 @@ use controller::UsersController;
 use sword::prelude::*;
 
 pub use dtos::{SearchUsersQuery, UpdateUserRoleRequest};
-pub use entity::{User, UserId, UserRole};
+pub use entity::*;
 pub use errors::UsersError;
 pub use policy::UserPolicy;
 pub use repository::UserRepository;

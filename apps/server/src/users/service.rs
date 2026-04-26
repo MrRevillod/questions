@@ -8,25 +8,23 @@ pub struct UsersService {
 }
 
 impl UsersService {
-    pub async fn list_users_admin(&self, query: SearchUsersQuery) -> AppResult<Vec<User>> {
-        let users = self
-            .users
-            .list_users(query.search.as_deref(), query.roles.as_deref())
-            .await?;
-
-        Ok(users)
+    pub async fn list_users(&self, query: SearchUsersQuery) -> AppResult<Vec<User>> {
+        self.users.list_users(UserFilter::from(query)).await
     }
 
     pub async fn list_collaborator_candidates(
         &self,
         query: SearchUsersQuery,
     ) -> AppResult<Vec<User>> {
-        let users = self
-            .users
-            .list_users(query.search.as_deref(), Some("assistant,func"))
-            .await?;
+        let filter = UserFilter::from(query);
 
-        Ok(users)
+        if let Some(roles) = &filter.roles
+            && roles.contains(&UserRole::Student)
+        {
+            return Err(UsersError::InvalidUserRole)?;
+        }
+
+        self.users.list_users(filter).await
     }
 
     pub async fn update_role(

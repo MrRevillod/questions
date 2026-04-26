@@ -27,11 +27,19 @@ impl AuthService {
         let LoginDto { username, password } = input;
 
         let ldap_user = self.ldap.authenticate(&username, &password).await?;
-        let incoming_user = User::new(username, ldap_user.name, ldap_user.email, ldap_user.role);
 
-        let user = match self.users.find_by_username(&incoming_user.username).await? {
+        let user = match self.users.find_by_username(&username).await? {
             Some(existing) => existing,
-            None => self.users.save(&incoming_user).await?,
+            None => {
+                let incoming_user = User::builder()
+                    .username(username)
+                    .email(ldap_user.email)
+                    .name(ldap_user.name)
+                    .role(ldap_user.role)
+                    .build();
+
+                self.users.save(&incoming_user).await?
+            }
         };
 
         let session_id = SessionId::new();

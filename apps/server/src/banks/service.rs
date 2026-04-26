@@ -1,4 +1,8 @@
 use crate::banks::*;
+use crate::courses::CourseId;
+use crate::quizzes::Quiz;
+use crate::shared::Tx;
+use crate::snapshots::SnapshotService;
 use crate::shared::{AppResult, TransactionManager};
 use crate::users::User;
 
@@ -10,6 +14,7 @@ use sword::prelude::*;
 pub struct QuestionBankService {
     policy: Arc<QuestionBankPolicy>,
     repository: Arc<QuestionBankRepository>,
+    snapshots: Arc<SnapshotService>,
     tx: Arc<TransactionManager>,
 }
 
@@ -17,7 +22,7 @@ impl QuestionBankService {
     pub async fn list_for_course(
         &self,
         current_user: &User,
-        course_id: &crate::courses::CourseId,
+        course_id: &CourseId,
     ) -> AppResult<Vec<QuestionBankView>> {
         self.policy
             .require_accessible_course(current_user, course_id)
@@ -46,21 +51,21 @@ impl QuestionBankService {
             .require_accessible_course(current_user, &input.course_id)
             .await?;
 
+        let questions = input
+            .questions
+            .iter()
+            .map(QuestionBankQuestion::from)
+            .collect::<Vec<_>>();
+
         let bank = QuestionBank::builder()
             .course_id(input.course_id)
             .name(input.name)
-            .questions(
-                input
-                    .questions
-                    .iter()
-                    .map(QuestionBankQuestion::from)
-                    .collect(),
-            )
+            .questions(questions)
             .created_at(Utc::now())
             .build();
 
         let mut tx = self.tx.begin().await?;
-        self.repository.create(&mut tx, &bank).await?;
+        self.repository.save(&mut tx, &bank).await?;
         tx.commit().await?;
 
         Ok(())
@@ -85,11 +90,11 @@ impl QuestionBankService {
             bank.questions = questions.iter().map(QuestionBankQuestion::from).collect();
         }
 
-        let linked_quizzes = self.repository.list_linked_quizzes(&bank.id).await?;
+        let linked_quizzes = self.snapshots.list_linked_quizzes(&bank.id).await?;
         self.ensure_not_linked_to_running_quiz(&linked_quizzes)?;
 
         let mut tx = self.tx.begin().await?;
-        self.repository.update(&mut tx, &bank).await?;
+        self.repository.save(&mut tx, &bank).await?;
         self.sync_not_started_snapshots(&mut tx, &linked_quizzes)
             .await?;
         tx.commit().await?;
@@ -107,7 +112,7 @@ impl QuestionBankService {
             .require_accessible_bank(current_user, bank_id)
             .await?;
 
-        let linked_quizzes = self.repository.list_linked_quizzes(&bank.id).await?;
+        let linked_quizzes = self.snapshots.list_linked_quizzes(&bank.id).await?;
         self.ensure_not_linked_to_running_quiz(&linked_quizzes)?;
 
         let mut tx = self.tx.begin().await?;
@@ -123,7 +128,7 @@ impl QuestionBankService {
         Ok(())
     }
 
-    fn ensure_not_linked_to_running_quiz(&self, quizzes: &[LinkedQuiz]) -> AppResult<()> {
+    fn ensure_not_linked_to_running_quiz(&self, quizzes: &[Quiz]) -> AppResult<()> {
         let now = Utc::now();
 
         if quizzes
@@ -138,8 +143,8 @@ impl QuestionBankService {
 
     async fn sync_not_started_snapshots(
         &self,
-        tx: &mut crate::shared::Tx<'_>,
-        quizzes: &[LinkedQuiz],
+        tx: &mut Tx<'_>,
+        quizzes: &[Quiz],
     ) -> AppResult<()> {
         let now = Utc::now();
 
@@ -148,17 +153,13 @@ impl QuestionBankService {
                 continue;
             }
 
-            let questions = self.repository.list_questions_for_quiz(&quiz.id).await?;
+            let questions = self.snapshots.list_questions_for_quiz(&quiz.id).await?;
 
             if quiz.question_count as usize > questions.len() {
                 return Err(QuestionBankError::InvalidQuestionCountAfterBankUpdate)?;
             }
 
-            if !self
-                .repository
-                .update_snapshot_questions(tx, &quiz.id, &questions)
-                .await?
-            {
+            if !self.snapshots.update_questions(tx, &quiz.id, &questions).await? {
                 return Err(QuestionBankError::SnapshotNotFound)?;
             }
         }

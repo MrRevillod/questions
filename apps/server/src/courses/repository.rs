@@ -34,6 +34,21 @@ impl CourseRepository {
         Ok(course)
     }
 
+    pub async fn find_by_ids(&self, course_ids: &Vec<CourseId>) -> AppResult<Vec<Course>> {
+        if course_ids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let courses = sqlx::query_as::<_, Course>(
+            "SELECT * FROM courses WHERE id = ANY($1) AND deleted_at IS NULL",
+        )
+        .bind(course_ids)
+        .fetch_all(self.db.get_pool())
+        .await?;
+
+        Ok(courses)
+    }
+
     pub async fn list_for_user(&self, user_id: &UserId) -> AppResult<Vec<Course>> {
         let courses = sqlx::query_as::<_, Course>(
             "SELECT c.*
@@ -50,20 +65,27 @@ impl CourseRepository {
         Ok(courses)
     }
 
-    pub async fn create(&self, tx: &mut Tx<'_>, course: &Course) -> AppResult<()> {
-        sqlx::query(
+    pub async fn save(&self, tx: &mut Tx<'_>, course: &Course) -> AppResult<Course> {
+        let course = sqlx::query_as::<_, Course>(
             "INSERT INTO courses (id, name, code, year, deleted_at)
-             VALUES ($1, $2, $3, $4, $5)",
+             VALUES ($1, $2, $3, $4, $5)
+             ON CONFLICT (id)
+             DO UPDATE SET
+                 name = EXCLUDED.name,
+                 code = EXCLUDED.code,
+                 year = EXCLUDED.year,
+                 deleted_at = EXCLUDED.deleted_at
+             RETURNING *",
         )
         .bind(course.id)
         .bind(&course.name)
         .bind(&course.code)
         .bind(course.year)
         .bind(course.deleted_at)
-        .execute(&mut **tx)
+        .fetch_one(&mut **tx)
         .await?;
 
-        Ok(())
+        Ok(course)
     }
 
     pub async fn soft_delete(&self, course_id: &CourseId) -> AppResult<bool> {

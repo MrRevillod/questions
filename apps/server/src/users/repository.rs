@@ -1,6 +1,6 @@
 use crate::{
     shared::{AppResult, Database},
-    users::{User, UserId, UserRole},
+    users::{User, UserFilter, UserId},
 };
 
 use sqlx::{Postgres, QueryBuilder};
@@ -52,14 +52,10 @@ impl UserRepository {
         Ok(result)
     }
 
-    pub async fn list_users(
-        &self,
-        query: Option<&str>,
-        roles: Option<&str>,
-    ) -> AppResult<Vec<User>> {
+    pub async fn list_users(&self, filter: UserFilter) -> AppResult<Vec<User>> {
         let mut qb: QueryBuilder<Postgres> = QueryBuilder::new("SELECT * FROM users WHERE 1=1");
 
-        if let Some(q) = query {
+        if let Some(q) = filter.search {
             let pattern = format!("%{}%", q.trim());
 
             qb.push(" AND (username ILIKE ")
@@ -69,17 +65,7 @@ impl UserRepository {
                 .push(")");
         }
 
-        if let Some(roles_raw) = roles {
-            let roles: Vec<UserRole> = roles_raw
-                .split(',')
-                .filter_map(|role| match role.trim().to_lowercase().as_str() {
-                    "student" => Some(UserRole::Student),
-                    "assistant" => Some(UserRole::Assistant),
-                    "func" => Some(UserRole::Func),
-                    _ => None,
-                })
-                .collect();
-
+        if let Some(roles) = filter.roles {
             if !roles.is_empty() {
                 qb.push(" AND role IN (");
 

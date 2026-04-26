@@ -1,4 +1,5 @@
 use crate::shared::{Entity, Id};
+use bon::Builder;
 use serde::{Deserialize, Serialize};
 use sqlx::{FromRow, Type};
 
@@ -9,12 +10,14 @@ pub enum UserRole {
     Student,
     Func,
     Assistant,
+    Admin,
 }
 
 pub type UserId = Id<User>;
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, FromRow)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize, FromRow, Builder)]
 pub struct User {
+    #[builder(default = UserId::new())]
     pub id: UserId,
     pub username: String,
     pub name: String,
@@ -28,14 +31,8 @@ impl Entity for User {
     }
 }
 
-impl User {
-    pub fn new(username: String, name: String, email: String, role: UserRole) -> Self {
-        Self {
-            id: UserId::new(),
-            username,
-            name,
-            email,
-            role,
-        }
-    }
+#[derive(Debug, Clone)]
+pub struct UserFilter {
+    pub search: Option<String>,
+    pub roles: Option<Vec<UserRole>>,
 }
