@@ -2,8 +2,8 @@ use crate::banks::*;
 use crate::courses::CourseId;
 use crate::quizzes::Quiz;
 use crate::shared::Tx;
-use crate::snapshots::SnapshotService;
 use crate::shared::{AppResult, TransactionManager};
+use crate::snapshots::SnapshotService;
 use crate::users::User;
 
 use chrono::Utc;
@@ -23,27 +23,27 @@ impl QuestionBankService {
         &self,
         current_user: &User,
         course_id: &CourseId,
-    ) -> AppResult<Vec<QuestionBankView>> {
+    ) -> AppResult<Vec<QuestionBank>> {
         self.policy
             .require_accessible_course(current_user, course_id)
             .await?;
 
         let banks = self.repository.list_by_course(course_id).await?;
 
-        Ok(banks.into_iter().map(QuestionBankView::from).collect())
+        Ok(banks)
     }
 
     pub async fn get_one(
         &self,
         current_user: &User,
         bank_id: &QuestionBankId,
-    ) -> AppResult<QuestionBankView> {
+    ) -> AppResult<QuestionBank> {
         let bank = self
             .policy
             .require_accessible_bank(current_user, bank_id)
             .await?;
 
-        Ok(QuestionBankView::from(bank))
+        Ok(bank)
     }
 
     pub async fn create(&self, current_user: &User, input: CreateQuestionBankDto) -> AppResult<()> {
@@ -54,7 +54,7 @@ impl QuestionBankService {
         let questions = input
             .questions
             .iter()
-            .map(QuestionBankQuestion::from)
+            .map(Question::from)
             .collect::<Vec<_>>();
 
         let bank = QuestionBank::builder()
@@ -65,7 +65,9 @@ impl QuestionBankService {
             .build();
 
         let mut tx = self.tx.begin().await?;
+
         self.repository.save(&mut tx, &bank).await?;
+
         tx.commit().await?;
 
         Ok(())
@@ -87,16 +89,18 @@ impl QuestionBankService {
         }
 
         if let Some(questions) = input.questions {
-            bank.questions = questions.iter().map(QuestionBankQuestion::from).collect();
+            bank.questions = questions.iter().map(Question::from).collect();
         }
 
         let linked_quizzes = self.snapshots.list_linked_quizzes(&bank.id).await?;
         self.ensure_not_linked_to_running_quiz(&linked_quizzes)?;
 
         let mut tx = self.tx.begin().await?;
+
         self.repository.save(&mut tx, &bank).await?;
         self.sync_not_started_snapshots(&mut tx, &linked_quizzes)
             .await?;
+
         tx.commit().await?;
 
         Ok(())
@@ -123,6 +127,7 @@ impl QuestionBankService {
 
         self.sync_not_started_snapshots(&mut tx, &linked_quizzes)
             .await?;
+
         tx.commit().await?;
 
         Ok(())
@@ -141,11 +146,7 @@ impl QuestionBankService {
         Ok(())
     }
 
-    async fn sync_not_started_snapshots(
-        &self,
-        tx: &mut Tx<'_>,
-        quizzes: &[Quiz],
-    ) -> AppResult<()> {
+    async fn sync_not_started_snapshots(&self, tx: &mut Tx<'_>, quizzes: &[Quiz]) -> AppResult<()> {
         let now = Utc::now();
 
         for quiz in quizzes {
@@ -153,13 +154,20 @@ impl QuestionBankService {
                 continue;
             }
 
-            let questions = self.snapshots.list_questions_for_quiz(&quiz.id).await?;
+            let questions = self
+                .snapshots
+                .list_questions_for_linked_banks(&quiz.id)
+                .await?;
 
             if quiz.question_count as usize > questions.len() {
                 return Err(QuestionBankError::InvalidQuestionCountAfterBankUpdate)?;
             }
 
-            if !self.snapshots.update_questions(tx, &quiz.id, &questions).await? {
+            if !self
+                .snapshots
+                .update_questions(tx, quiz.snapshot_id, &questions)
+                .await?
+            {
                 return Err(QuestionBankError::SnapshotNotFound)?;
             }
         }

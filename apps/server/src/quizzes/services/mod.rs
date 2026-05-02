@@ -7,15 +7,17 @@ pub use policy::*;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
+use crate::attempts::{AttemptResultView, AttemptsService};
 use crate::banks::QuestionBankRepository;
 use crate::courses::CourseRepository;
 use crate::quizzes::*;
 use crate::shared::{AppResult, TransactionManager};
 use crate::snapshots::SnapshotService;
-use crate::users::User;
+use crate::users::{User, UserRole};
 
 use chrono::{DateTime, Utc};
 use sword::prelude::*;
+use uuid::Uuid;
 
 #[injectable]
 pub struct QuizService {
@@ -26,6 +28,7 @@ pub struct QuizService {
     snapshots: Arc<SnapshotService>,
     tx: Arc<TransactionManager>,
     banks: Arc<QuestionBankRepository>,
+    attempts: Arc<AttemptsService>,
 }
 
 impl QuizService {
@@ -45,8 +48,6 @@ impl QuizService {
     }
 
     pub async fn list_managed_by_user(&self, current_user: &User) -> AppResult<Vec<QuizView>> {
-        self.policy.can_list_managed_quizzes(current_user)?;
-
         let quizzes = self
             .repository
             .list_managed_by_user(&current_user.id)
@@ -78,13 +79,7 @@ impl QuizService {
         Ok(views)
     }
 
-    pub async fn get_join_preview(
-        &self,
-        current_user: &User,
-        code: &str,
-    ) -> AppResult<JoinQuizPreviewView> {
-        self.policy.can_join_quiz(current_user)?;
-
+    pub async fn get_join_preview(&self, code: &str) -> AppResult<JoinQuizPreviewView> {
         let Some(quiz) = self.repository.find_by_code(code).await? else {
             return Err(QuizError::NotFound(code.to_string()))?;
         };
@@ -96,8 +91,38 @@ impl QuizService {
         Ok(JoinQuizPreviewView::from(&quiz))
     }
 
+    pub async fn get_my_result_by_join_code(
+        &self,
+        current_user: &User,
+        code: &str,
+    ) -> AppResult<AttemptResultView> {
+        let Some(quiz) = self.repository.find_by_code(code).await? else {
+            return Err(QuizError::NotFound(code.to_string()))?;
+        };
+
+        if current_user.role != UserRole::Admin
+            && !self
+                .courses
+                .is_member(&quiz.course_id, &current_user.id)
+                .await?
+        {
+            return Err(QuizError::Forbidden)?;
+        }
+
+        let attempt = self
+            .attempts
+            .get_attempt_for_quiz_and_student(&quiz.id, &current_user.id)
+            .await?;
+
+        self.attempts
+            .view_results(attempt.id, current_user.id)
+            .await
+    }
+
     pub async fn create(&self, current_user: &User, input: CreateQuizDto) -> AppResult<QuizView> {
-        self.policy.can_create_quiz(current_user)?;
+        self.policy
+            .check_can_create_quiz(current_user, &input.course_id)
+            .await?;
 
         if !self
             .banks
@@ -120,8 +145,11 @@ impl QuizService {
             .map_err(|_| QuizError::InvalidStartTime)?
             .with_timezone(&Utc);
 
+        let snapshot_id = Uuid::new_v4();
+
         let quiz = Quiz::builder()
             .course_id(input.course_id)
+            .snapshot_id(snapshot_id)
             .title(input.title)
             .kind(input.kind)
             .join_code(self.codegen.generate_unique_join_code().await?)
@@ -133,14 +161,15 @@ impl QuizService {
             .build();
 
         let mut tx = self.tx.begin().await?;
+
+        self.snapshots
+            .create_snapshot(&mut tx, snapshot_id, &questions)
+            .await?;
+
         let quiz = self.repository.save(&mut tx, &quiz).await?;
 
         self.repository
             .set_bank_links(&mut tx, &quiz.id, &input.bank_ids)
-            .await?;
-
-        self.snapshots
-            .upsert_questions(&mut tx, &quiz.id, &questions)
             .await?;
 
         tx.commit().await?;

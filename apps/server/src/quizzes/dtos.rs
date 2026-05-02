@@ -72,7 +72,7 @@ pub struct CertaintyScoreDto {
 
 fn validate_create_schema(dto: &CreateQuizDto) -> Result<(), ValidationError> {
     validate_start_time(&dto.starts_at)?;
-    validate_quiz_mode(&dto)
+    validate_quiz_mode(dto)
 }
 
 fn validate_start_time(start_time_utc: &str) -> Result<(), ValidationError> {
@@ -97,7 +97,6 @@ fn validate_quiz_mode(dto: &CreateQuizDto) -> Result<(), ValidationError> {
     let has_certainty_config = dto.certainty_config.is_some();
 
     match (kind, has_certainty_config) {
-        (QuizKind::Certainty, true) => Ok(()),
         (QuizKind::Certainty, false) => {
             let mut err = ValidationError::new("certainty_config_required");
             err.message = Some("certaintyConfig is required for certainty quizzes".into());
@@ -108,7 +107,7 @@ fn validate_quiz_mode(dto: &CreateQuizDto) -> Result<(), ValidationError> {
             err.message = Some("certaintyConfig is not allowed for traditional quizzes".into());
             Err(err)
         }
-        (QuizKind::Traditional, false) => Ok(()),
+        (QuizKind::Certainty, true) | (QuizKind::Traditional, false) => Ok(()),
     }
 }
 

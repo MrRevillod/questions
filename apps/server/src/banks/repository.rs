@@ -1,4 +1,4 @@
-use crate::banks::{QuestionBank, QuestionBankId, QuestionBankQuestion};
+use crate::banks::{Question, QuestionBank, QuestionBankId};
 use crate::courses::CourseId;
 use crate::shared::{AppResult, Database, Tx};
 
@@ -83,11 +83,8 @@ impl QuestionBankRepository {
         }
 
         let count = sqlx::query_scalar::<_, i64>(
-            "SELECT COUNT(*)
-             FROM question_banks
-             WHERE id = ANY($1)
-               AND course_id = $2
-               AND deleted_at IS NULL",
+            "SELECT COUNT(*) FROM question_banks
+            WHERE id = ANY($1) AND course_id = $2 AND deleted_at IS NULL",
         )
         .bind(bank_ids)
         .bind(course_id)
@@ -100,12 +97,10 @@ impl QuestionBankRepository {
     pub async fn list_questions_by_bank_ids(
         &self,
         bank_ids: &[QuestionBankId],
-    ) -> AppResult<Vec<QuestionBankQuestion>> {
-        let rows = sqlx::query_scalar::<_, Vec<QuestionBankQuestion>>(
-            "SELECT qb.questions
-             FROM question_banks qb
-             WHERE qb.id = ANY($1)
-               AND qb.deleted_at IS NULL",
+    ) -> AppResult<Vec<Question>> {
+        let rows = sqlx::query_scalar::<_, Vec<Question>>(
+            "SELECT qb.questions FROM question_banks qb
+             WHERE qb.id = ANY($1) AND qb.deleted_at IS NULL",
         )
         .bind(bank_ids)
         .fetch_all(self.db.get_pool())
@@ -113,5 +108,4 @@ impl QuestionBankRepository {
 
         Ok(rows.into_iter().flatten().collect())
     }
-
 }

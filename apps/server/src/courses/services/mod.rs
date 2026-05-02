@@ -38,10 +38,6 @@ impl CoursesService {
     }
 
     pub async fn create(&self, current_user: &User, input: CreateCourseDto) -> AppResult<Course> {
-        if !matches!(current_user.role, UserRole::Func | UserRole::Assistant) {
-            return Err(CoursesError::Forbidden)?;
-        }
-
         if self.repository.find_by_code(&input.code).await?.is_some() {
             return Err(CoursesError::CodeAlreadyExists)?;
         }

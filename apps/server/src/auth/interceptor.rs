@@ -18,12 +18,14 @@ impl OnRequest for SessionCheck {
         let method = req.method().to_string();
         let path = req.uri();
 
-        let auth_header = match req.authorization() {
-            Some(value) => value,
-            None => {
-                tracing::warn!(method = %method, path = %path, "SessionCheck rejected: missing Authorization header");
-                return Err(JsonResponse::Unauthorized());
-            }
+        let Some(auth_header) = req.authorization() else {
+            tracing::warn!(method = %method, path = %path, "SessionCheck rejected: missing Authorization header");
+            return Err(JsonResponse::Unauthorized());
+        };
+
+        let Some(auth_header) = auth_header.strip_prefix("Bearer ") else {
+            tracing::warn!(method = %method, path = %path, "SessionCheck rejected: invalid Authorization scheme");
+            return Err(JsonResponse::Unauthorized());
         };
 
         let Some(token) = auth_header.strip_prefix("Bearer ") else {

@@ -15,7 +15,7 @@ pub trait Entity {
     fn key_name() -> &'static str;
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Id<T: Entity> {
     value: Uuid,
     _marker: PhantomData<T>,
@@ -110,7 +110,7 @@ impl<T: Entity> Type<Postgres> for Id<T> {
     }
 }
 
-impl<'q, T: Entity> Encode<'q, Postgres> for Id<T> {
+impl<T: Entity> Encode<'_, Postgres> for Id<T> {
     fn encode_by_ref(&self, buf: &mut PgArgumentBuffer) -> Result<IsNull, BoxDynError> {
         <Uuid as Encode<Postgres>>::encode_by_ref(&self.value, buf)
     }

@@ -859,6 +859,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28dea519a9695b9977216879a3ebfddf92f1c08c05d984f8996aecd6ecdc811d"
 
 [[package]]
+name = "filterstruct"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49bd77c09b7f3f0ef7c7785a0329a14c7b237dabed79270f4ebeda2234df1586"
+dependencies = [
+ "uuid",
+]
+
+[[package]]
 name = "find-msvc-tools"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2486,6 +2495,7 @@ version = "0.1.0"
 dependencies = [
  "bon",
  "chrono",
+ "filterstruct",
  "jsonwebtoken",
  "ldap3",
  "rand 0.10.0",
@@ -2493,6 +2503,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "sqlx",
+ "strum_macros",
  "sword",
  "thiserror",
  "tokio",
@@ -2906,6 +2917,18 @@ name = "strsim"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
+
+[[package]]
+name = "strum_macros"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab85eea0270ee17587ed4156089e10b9e6880ee688791d45a905f5b1ca36f664"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.117",
+]
 
 [[package]]
 name = "subtle"

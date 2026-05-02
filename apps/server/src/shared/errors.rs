@@ -1,6 +1,6 @@
 use crate::{
-    authz::AuthzError, banks::QuestionBankError, courses::CoursesError, quizzes::QuizError,
-    users::UsersError,
+    attempts::AttemptError, authz::AuthzError, banks::QuestionBankError, courses::CoursesError,
+    quizzes::QuizError, users::UsersError,
 };
 
 use jsonwebtoken::errors::Error as JwtError;
@@ -38,6 +38,10 @@ pub enum AppError {
     #[http(transparent)]
     #[error(transparent)]
     Authz(#[from] AuthzError),
+
+    #[http(transparent)]
+    #[error(transparent)]
+    Attempts(#[from] AttemptError),
 
     #[http(
         code = 401,

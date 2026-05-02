@@ -55,7 +55,7 @@ impl From<SearchUsersQuery> for UserFilter {
                 .collect::<Vec<_>>()
         });
 
-        UserFilter {
+        Self {
             search: value.search,
             roles,
         }

@@ -2,12 +2,12 @@ CREATE TABLE attempts (
 	id UUID PRIMARY KEY,
 	student_id UUID NOT NULL REFERENCES users(id),
 	quiz_id UUID NOT NULL REFERENCES quizzes(id),
-	snapshot_id UUID NOT NULL REFERENCES question_bank_snapshots(id),
 	score SMALLINT,
-	grade DOUBLE,
+	grade DOUBLE PRECISION,
 	question_order UUID[] NOT NULL,
 	started_at TIMESTAMPTZ NOT NULL,
 	expires_at TIMESTAMPTZ NOT NULL,
+	submitted_at TIMESTAMPTZ,
 	results_viewed_at TIMESTAMPTZ,
 	deleted_at TIMESTAMPTZ
 );

@@ -1,12 +1,14 @@
+use std::sync::Arc;
+
 use crate::courses::{Course, CourseId, CourseRepository, CoursesError};
 use crate::shared::AppResult;
-use crate::users::User;
+use crate::users::{User, UserRole};
 
 use sword::prelude::*;
 
 #[injectable]
 pub struct CoursePolicy {
-    repository: CourseRepository,
+    repository: Arc<CourseRepository>,
 }
 
 impl CoursePolicy {
@@ -18,6 +20,10 @@ impl CoursePolicy {
         let Some(course) = self.repository.find_by_id(course_id).await? else {
             return Err(CoursesError::NotFound(course_id.to_string()))?;
         };
+
+        if current_user.role == UserRole::Admin {
+            return Ok(course);
+        }
 
         if !self
             .repository
@@ -38,6 +44,10 @@ impl CoursePolicy {
         let course = self
             .require_accessible_course(current_user, course_id)
             .await?;
+
+        if current_user.role == UserRole::Admin {
+            return Ok(course);
+        }
 
         if !self
             .repository

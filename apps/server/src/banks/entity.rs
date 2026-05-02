@@ -17,7 +17,7 @@ pub struct QuestionBank {
     pub id: QuestionBankId,
     pub course_id: CourseId,
     pub name: String,
-    pub questions: Vec<QuestionBankQuestion>,
+    pub questions: Vec<Question>,
     pub created_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
@@ -30,11 +30,30 @@ impl Entity for QuestionBank {
 
 #[derive(Clone, Debug, Serialize, Deserialize, Type, Builder)]
 #[sqlx(type_name = "question")]
-pub struct QuestionBankQuestion {
+pub struct Question {
     #[builder(default = Uuid::new_v4())]
     pub id: Uuid,
     pub prompt: String,
     pub options: Vec<String>,
     pub answer_index: i16,
     pub images: Vec<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, FromRow)]
+pub struct QuestionView {
+    pub id: Uuid,
+    pub prompt: String,
+    pub options: Vec<String>,
+    pub images: Vec<String>,
+}
+
+impl From<Question> for QuestionView {
+    fn from(question: Question) -> Self {
+        Self {
+            id: question.id,
+            prompt: question.prompt,
+            options: question.options,
+            images: question.images,
+        }
+    }
 }

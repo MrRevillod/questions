@@ -51,30 +51,12 @@ impl QuizRepository {
         Ok(quizzes)
     }
 
-    pub async fn has_course_access(&self, quiz_id: &QuizId, user_id: &UserId) -> AppResult<bool> {
-        let has_access = sqlx::query_scalar::<_, bool>(
-            "SELECT EXISTS(
-                SELECT 1
-                FROM quizzes q
-                INNER JOIN course_members cm ON cm.course_id = q.course_id
-                WHERE q.id = $1
-                  AND q.deleted_at IS NULL
-                  AND cm.user_id = $2
-            )",
-        )
-        .bind(quiz_id)
-        .bind(user_id)
-        .fetch_one(self.db.get_pool())
-        .await?;
-
-        Ok(has_access)
-    }
-
     pub async fn save(&self, tx: &mut Tx<'_>, quiz: &Quiz) -> AppResult<Quiz> {
         let quiz = sqlx::query_as::<_, Quiz>(
             "INSERT INTO quizzes (
                 id,
                 course_id,
+                snapshot_id,
                 title,
                 kind,
                 join_code,
@@ -86,10 +68,11 @@ impl QuizRepository {
                 created_at,
                 deleted_at
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             ON CONFLICT (id)
             DO UPDATE SET
                 course_id = EXCLUDED.course_id,
+                snapshot_id = EXCLUDED.snapshot_id,
                 title = EXCLUDED.title,
                 kind = EXCLUDED.kind,
                 join_code = EXCLUDED.join_code,
@@ -104,6 +87,7 @@ impl QuizRepository {
         )
         .bind(quiz.id)
         .bind(quiz.course_id)
+        .bind(quiz.snapshot_id)
         .bind(&quiz.title)
         .bind(&quiz.kind)
         .bind(&quiz.join_code)
@@ -120,7 +104,7 @@ impl QuizRepository {
         Ok(quiz)
     }
 
-    pub async fn close_quiz(&self, quiz_id: &QuizId) -> AppResult<()> {
+    pub async fn _close_quiz(&self, quiz_id: &QuizId) -> AppResult<()> {
         let now = Utc::now();
 
         sqlx::query(
@@ -160,15 +144,14 @@ impl QuizRepository {
             .execute(&mut **tx)
             .await?;
 
-        for bank_id in bank_ids {
-            sqlx::query(
-                "INSERT INTO quiz_question_banks (quiz_id, question_bank_id) VALUES ($1, $2)",
-            )
-            .bind(quiz_id)
-            .bind(bank_id)
-            .execute(&mut **tx)
-            .await?;
-        }
+        let mut query_builder =
+            sqlx::QueryBuilder::new("INSERT INTO quiz_question_banks (quiz_id, question_bank_id) ");
+
+        query_builder.push_values(bank_ids.iter(), |mut b, bank_id| {
+            b.push_bind(quiz_id).push_bind(bank_id);
+        });
+
+        query_builder.build().execute(&mut **tx).await?;
 
         Ok(())
     }

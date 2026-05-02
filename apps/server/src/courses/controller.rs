@@ -16,7 +16,7 @@ pub struct CoursesController {
 
 impl CoursesController {
     #[get("/")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ListCourses)]
+    #[interceptor(AuthzGuard, config = AuthzAction::CourseList)]
     pub async fn get_courses(&self, req: Request) -> WebResult {
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
         let courses = self.courses.list_for_user(current_user).await?;
@@ -25,7 +25,7 @@ impl CoursesController {
     }
 
     #[get("/{courseId}")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ReadCourse)]
+    #[interceptor(AuthzGuard, config = AuthzAction::CourseRead)]
     pub async fn get_course(&self, req: Request) -> WebResult {
         let course_id = req.param::<CourseId>("courseId")?;
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
@@ -36,7 +36,7 @@ impl CoursesController {
     }
 
     #[post("/")]
-    #[interceptor(AuthzGuard, config = AuthzAction::CreateCourse)]
+    #[interceptor(AuthzGuard, config = AuthzAction::CourseCreate)]
     pub async fn create_course(&self, req: Request) -> WebResult {
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
         let input = req.body_validator::<CreateCourseDto>()?;
@@ -47,7 +47,7 @@ impl CoursesController {
     }
 
     #[delete("/{courseId}")]
-    #[interceptor(AuthzGuard, config = AuthzAction::DeleteCourse)]
+    #[interceptor(AuthzGuard, config = AuthzAction::CourseDelete)]
     pub async fn delete_course(&self, req: Request) -> WebResult {
         let course_id = req.param::<CourseId>("courseId")?;
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
@@ -58,7 +58,7 @@ impl CoursesController {
     }
 
     #[get("/{courseId}/members")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ReadCourse)]
+    #[interceptor(AuthzGuard, config = AuthzAction::CourseRead)]
     pub async fn list_members(&self, req: Request) -> WebResult {
         let course_id = req.param::<CourseId>("courseId")?;
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
@@ -69,7 +69,7 @@ impl CoursesController {
     }
 
     #[post("/{courseId}/members")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ManageCourseMembers)]
+    #[interceptor(AuthzGuard, config = AuthzAction::CourseManageMembers)]
     pub async fn add_member(&self, req: Request) -> WebResult {
         let course_id = req.param::<CourseId>("courseId")?;
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
@@ -83,7 +83,7 @@ impl CoursesController {
     }
 
     #[delete("/{courseId}/members/{userId}")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ManageCourseMembers)]
+    #[interceptor(AuthzGuard, config = AuthzAction::CourseManageMembers)]
     pub async fn remove_member(&self, req: Request) -> WebResult {
         let course_id = req.param::<CourseId>("courseId")?;
         let user_id = req.param::<UserId>("userId")?;

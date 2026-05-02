@@ -1,20 +1,23 @@
+mod attempts;
 mod auth;
 mod authz;
 mod banks;
 mod courses;
 mod logger;
+mod macros;
 mod quizzes;
-mod snapshots;
 mod shared;
+mod snapshots;
 mod users;
 
+use attempts::AttemptsModule;
 use auth::AuthModule;
 use authz::AuthzModule;
 use banks::QuestionBankModule;
 use courses::CoursesModule;
 use quizzes::QuizzesModule;
-use snapshots::SnapshotsModule;
 use shared::SharedModule;
+use snapshots::SnapshotsModule;
 use users::UsersModule;
 
 use logger::LoggerLayer;
@@ -31,6 +34,7 @@ async fn main() {
         .with_module::<QuizzesModule>()
         .with_module::<SnapshotsModule>()
         .with_module::<SharedModule>()
+        .with_module::<AttemptsModule>()
         .with_layer(LoggerLayer())
         .build();
 

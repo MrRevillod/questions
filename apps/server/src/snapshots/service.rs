@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
-use crate::banks::{QuestionBankId, QuestionBankQuestion};
+use crate::banks::{Question, QuestionBankId};
 use crate::quizzes::{Quiz, QuizId};
 use crate::shared::{AppResult, Tx};
 use crate::snapshots::SnapshotRepository;
 
 use sword::prelude::*;
+use uuid::Uuid;
 
 #[injectable]
 pub struct SnapshotService {
@@ -17,32 +18,34 @@ impl SnapshotService {
         self.repository.list_linked_quizzes(bank_id).await
     }
 
-    pub async fn list_questions_for_quiz(
+    pub async fn list_questions_for_linked_banks(
         &self,
         quiz_id: &QuizId,
-    ) -> AppResult<Vec<QuestionBankQuestion>> {
-        self.repository.list_questions_for_quiz(quiz_id).await
+    ) -> AppResult<Vec<Question>> {
+        self.repository
+            .list_questions_for_linked_banks(quiz_id)
+            .await
     }
 
-    pub async fn upsert_questions(
+    pub async fn create_snapshot(
         &self,
         tx: &mut Tx<'_>,
-        quiz_id: &QuizId,
-        questions: &[QuestionBankQuestion],
+        snapshot_id: Uuid,
+        questions: &[Question],
     ) -> AppResult<()> {
         self.repository
-            .upsert_questions(tx, quiz_id, questions)
+            .create_snapshot(tx, snapshot_id, questions)
             .await
     }
 
     pub async fn update_questions(
         &self,
         tx: &mut Tx<'_>,
-        quiz_id: &QuizId,
-        questions: &[QuestionBankQuestion],
+        snapshot_id: Uuid,
+        questions: &[Question],
     ) -> AppResult<bool> {
         self.repository
-            .update_questions(tx, quiz_id, questions)
+            .update_questions(tx, snapshot_id, questions)
             .await
     }
 }

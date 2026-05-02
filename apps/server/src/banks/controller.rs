@@ -16,11 +16,11 @@ pub struct QuestionBankController {
 
 impl QuestionBankController {
     #[get("/course/{courseId}")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ListQuestionBanks)]
+    #[interceptor(AuthzGuard, config = AuthzAction::BankList)] // (func | assistant)
     pub async fn list_banks(&self, req: Request) -> WebResult {
         let course_id = req.param::<CourseId>("courseId")?;
-
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
+
         let banks = self
             .service
             .list_for_course(current_user, &course_id)
@@ -30,7 +30,7 @@ impl QuestionBankController {
     }
 
     #[get("/{bankId}")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ReadQuestionBank)]
+    #[interceptor(AuthzGuard, config = AuthzAction::BankRead)] // (func | assistant)
     pub async fn get_bank(&self, req: Request) -> WebResult {
         let bank_id = req.param::<QuestionBankId>("bankId")?;
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
@@ -41,7 +41,7 @@ impl QuestionBankController {
     }
 
     #[post("/")]
-    #[interceptor(AuthzGuard, config = AuthzAction::CreateQuestionBank)]
+    #[interceptor(AuthzGuard, config = AuthzAction::BankCreate)]
     pub async fn create_bank(&self, req: Request) -> WebResult {
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
         let input = req.body_validator::<CreateQuestionBankDto>()?;
@@ -52,7 +52,7 @@ impl QuestionBankController {
     }
 
     #[patch("/{bankId}")]
-    #[interceptor(AuthzGuard, config = AuthzAction::UpdateQuestionBank)]
+    #[interceptor(AuthzGuard, config = AuthzAction::BankUpdate)]
     pub async fn update_bank(&self, req: Request) -> WebResult {
         let bank_id = req.param::<QuestionBankId>("bankId")?;
         let input = req.body_validator::<UpdateQuestionBankDto>()?;
@@ -65,7 +65,7 @@ impl QuestionBankController {
     }
 
     #[delete("/{bankId}")]
-    #[interceptor(AuthzGuard, config = AuthzAction::DeleteQuestionBank)]
+    #[interceptor(AuthzGuard, config = AuthzAction::BankDelete)]
     pub async fn delete_bank(&self, req: Request) -> WebResult {
         let bank_id = req.param::<QuestionBankId>("bankId")?;
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;

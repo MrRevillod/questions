@@ -29,7 +29,6 @@ impl UsersService {
 
     pub async fn update_role(
         &self,
-        current_user: &User,
         user_id: &UserId,
         input: UpdateUserRoleRequest,
     ) -> AppResult<User> {
@@ -39,8 +38,7 @@ impl UsersService {
             .await?
             .ok_or_else(|| UsersError::NotFound(user_id.to_string()))?;
 
-        self.policy
-            .can_assign_assistant_role(current_user, &target)?;
+        self.policy.can_assign_assistant_role(&target)?;
 
         target.role = UserRole::from(input.role);
 

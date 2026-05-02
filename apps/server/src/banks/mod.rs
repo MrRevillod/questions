@@ -5,7 +5,6 @@ mod errors;
 mod policy;
 mod repository;
 mod service;
-mod views;
 
 use sword::prelude::*;
 
@@ -16,7 +15,6 @@ pub use errors::*;
 pub use policy::*;
 pub use repository::*;
 pub use service::*;
-pub use views::*;
 
 pub struct QuestionBankModule;
 

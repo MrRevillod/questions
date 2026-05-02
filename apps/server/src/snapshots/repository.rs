@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::banks::{QuestionBankId, QuestionBankQuestion};
+use crate::banks::{Question, QuestionBankId};
 use crate::quizzes::{Quiz, QuizId};
 use crate::shared::{AppResult, Database, Tx};
 
@@ -26,11 +26,25 @@ impl SnapshotRepository {
         Ok(quizzes)
     }
 
-    pub async fn list_questions_for_quiz(
+    pub async fn list_questions_for_quiz(&self, quiz_id: &QuizId) -> AppResult<Vec<Question>> {
+        let questions = sqlx::query_scalar::<_, Vec<Question>>(
+            "SELECT qbs.questions FROM quizzes q
+             INNER JOIN question_bank_snapshots qbs ON qbs.id = q.snapshot_id
+             WHERE q.id = $1 AND q.deleted_at IS NULL",
+        )
+        .bind(quiz_id)
+        .fetch_optional(self.db.get_pool())
+        .await?
+        .unwrap_or_default();
+
+        Ok(questions)
+    }
+
+    pub async fn list_questions_for_linked_banks(
         &self,
         quiz_id: &QuizId,
-    ) -> AppResult<Vec<QuestionBankQuestion>> {
-        let rows = sqlx::query_scalar::<_, Vec<QuestionBankQuestion>>(
+    ) -> AppResult<Vec<Question>> {
+        let rows = sqlx::query_scalar::<_, Vec<Question>>(
             "SELECT qb.questions FROM question_banks qb
              INNER JOIN quiz_question_banks qqb ON qqb.question_bank_id = qb.id
              WHERE qqb.quiz_id = $1 AND qb.deleted_at IS NULL",
@@ -42,20 +56,17 @@ impl SnapshotRepository {
         Ok(rows.into_iter().flatten().collect())
     }
 
-    pub async fn upsert_questions(
+    pub async fn create_snapshot(
         &self,
         tx: &mut Tx<'_>,
-        quiz_id: &QuizId,
-        questions: &[QuestionBankQuestion],
+        snapshot_id: Uuid,
+        questions: &[Question],
     ) -> AppResult<()> {
         sqlx::query(
-            "INSERT INTO question_bank_snapshots (id, quiz_id, questions, deleted_at)
-             VALUES ($1, $2, $3, NULL)
-             ON CONFLICT (quiz_id) WHERE deleted_at IS NULL
-             DO UPDATE SET questions = EXCLUDED.questions",
+            "INSERT INTO question_bank_snapshots (id, questions, deleted_at)
+             VALUES ($1, $2, NULL)",
         )
-        .bind(Uuid::new_v4())
-        .bind(quiz_id)
+        .bind(snapshot_id)
         .bind(questions)
         .execute(&mut **tx)
         .await?;
@@ -66,14 +77,14 @@ impl SnapshotRepository {
     pub async fn update_questions(
         &self,
         tx: &mut Tx<'_>,
-        quiz_id: &QuizId,
-        questions: &[QuestionBankQuestion],
+        snapshot_id: Uuid,
+        questions: &[Question],
     ) -> AppResult<bool> {
         let result = sqlx::query(
             "UPDATE question_bank_snapshots SET questions = $2
-             WHERE quiz_id = $1 AND deleted_at IS NULL",
+             WHERE id = $1 AND deleted_at IS NULL",
         )
-        .bind(quiz_id)
+        .bind(snapshot_id)
         .bind(questions)
         .execute(&mut **tx)
         .await?;

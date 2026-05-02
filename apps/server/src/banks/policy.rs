@@ -1,10 +1,9 @@
-use std::sync::Arc;
-
-use crate::banks::{QuestionBank, QuestionBankError, QuestionBankId, QuestionBankRepository};
+use crate::banks::*;
 use crate::courses::{CourseId, CourseRepository};
 use crate::shared::AppResult;
-use crate::users::User;
+use crate::users::{User, UserRole};
 
+use std::sync::Arc;
 use sword::prelude::*;
 
 #[injectable]
@@ -21,6 +20,10 @@ impl QuestionBankPolicy {
     ) -> AppResult<()> {
         if self.courses.find_by_id(course_id).await?.is_none() {
             return Err(QuestionBankError::NotFound(course_id.to_string()))?;
+        }
+
+        if current_user.role == UserRole::Admin {
+            return Ok(());
         }
 
         if !self.courses.is_member(course_id, &current_user.id).await? {

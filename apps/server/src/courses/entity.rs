@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 pub type CourseId = Id<Course>;
 
-#[derive(Clone, Debug, Serialize, Deserialize, FromRow, Builder, Hash, PartialEq, Eq)]
+#[derive(Clone, Debug, Serialize, Deserialize, FromRow, Builder, Hash, PartialEq, Eq, Default)]
 pub struct Course {
     #[builder(default = CourseId::new())]
     pub id: CourseId,

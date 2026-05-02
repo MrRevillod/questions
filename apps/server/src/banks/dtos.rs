@@ -1,4 +1,4 @@
-use crate::{banks::QuestionBankQuestion, courses::CourseId};
+use crate::{banks::Question, courses::CourseId};
 
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
@@ -80,9 +80,9 @@ fn validate_update_has_fields(dto: &UpdateQuestionBankDto) -> Result<(), Validat
     Err(err)
 }
 
-impl From<&QuestionInput> for QuestionBankQuestion {
+impl From<&QuestionInput> for Question {
     fn from(value: &QuestionInput) -> Self {
-        QuestionBankQuestion::builder()
+        Question::builder()
             .prompt(value.prompt.clone())
             .options(value.options.clone())
             .answer_index(value.answer_index as i16)

@@ -76,4 +76,8 @@ pub enum QuizError {
     )]
     #[error("Banks are not valid for course")]
     InvalidBanksForCourse,
+
+    #[http(code = 400, message = "One or more questions are invalid.")]
+    #[error("One or more questions are invalid: {0}")]
+    QuestionNotFound(String),
 }

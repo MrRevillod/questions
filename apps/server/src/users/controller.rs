@@ -30,7 +30,7 @@ impl UsersController {
     }
 
     #[get("/")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ListUsersAdmin)]
+    #[interceptor(AuthzGuard, config = AuthzAction::UserListAdmin)]
     #[doc = "List all users in system (admin only) with all details."]
     pub async fn list_users(&self, req: Request) -> WebResult {
         let query = req.query::<SearchUsersQuery>()?.unwrap_or_default();
@@ -40,7 +40,7 @@ impl UsersController {
     }
 
     #[get("/collaborator-candidates")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ListCollaboratorCandidates)]
+    #[interceptor(AuthzGuard, config = AuthzAction::UserListCollaboratorCandidates)]
     #[doc = "List users (teachers and assistants) who can be added as test collaborators"]
     pub async fn list_collaborator_candidates(&self, req: Request) -> WebResult {
         let query = req.query::<SearchUsersQuery>()?.unwrap_or_default();
@@ -50,18 +50,13 @@ impl UsersController {
     }
 
     #[patch("/{userId}/role")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ManageAssistants)]
+    #[interceptor(AuthzGuard, config = AuthzAction::UserManageAssistants)]
     #[doc = "Update a student role to 'assistant' (admin executable only)"]
     pub async fn set_user_role(&self, req: Request) -> WebResult {
         let user_id = req.param::<UserId>("userId")?;
-        let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
-
         let input = req.body_validator::<UpdateUserRoleRequest>()?;
 
-        let updated_user = self
-            .service
-            .update_role(current_user, &user_id, input)
-            .await?;
+        let updated_user = self.service.update_role(&user_id, input).await?;
 
         Ok(JsonResponse::Ok().data(updated_user))
     }

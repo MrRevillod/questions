@@ -10,26 +10,35 @@ pub use service::AuthzService;
 
 #[derive(Clone, Copy, Debug)]
 pub enum AuthzAction {
-    CreateCourse,
-    ListCourses,
-    ReadCourse,
-    DeleteCourse,
-    ManageCourseMembers,
-    CreateQuestionBank,
-    ListQuestionBanks,
-    ReadQuestionBank,
-    UpdateQuestionBank,
-    DeleteQuestionBank,
-    CreateQuiz,
-    ListManagedQuizzes,
-    ReadManagedQuiz,
-    UpdateManagedQuiz,
-    ManageQuizCollaborators,
-    JoinQuizByCode,
-    DeleteManagedQuiz,
-    ListUsersAdmin,
-    ListCollaboratorCandidates,
-    ManageAssistants,
+    CourseList,
+    CourseRead,
+    CourseCreate,
+    CourseDelete,
+    CourseManageMembers,
+
+    BankList,
+    BankRead,
+    BankCreate,
+    BankUpdate,
+    BankDelete,
+
+    QuizReadManaged,
+    QuizListManaged,
+    QuizCreate,
+    QuizUpdateManaged,
+    QuizManageCollaborators,
+    QuizJoinByCode,
+    QuizViewAttemptResultByCode,
+    QuizDeleteManaged,
+
+    AttemptList,
+    AttemptInitialize,
+    AttemptSubmit,
+    AttemptViewResults,
+
+    UserListAdmin,
+    UserListCollaboratorCandidates,
+    UserManageAssistants,
 }
 
 pub struct AuthzModule;

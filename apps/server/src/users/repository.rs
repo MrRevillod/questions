@@ -65,17 +65,17 @@ impl UserRepository {
                 .push(")");
         }
 
-        if let Some(roles) = filter.roles {
-            if !roles.is_empty() {
-                qb.push(" AND role IN (");
+        if let Some(roles) = filter.roles
+            && !roles.is_empty()
+        {
+            qb.push(" AND role IN (");
 
-                let mut separated = qb.separated(", ");
-                for role in roles {
-                    separated.push_bind(role);
-                }
-
-                separated.push_unseparated(")");
+            let mut separated = qb.separated(", ");
+            for role in roles {
+                separated.push_bind(role);
             }
+
+            separated.push_unseparated(")");
         }
 
         qb.push(" ORDER BY username ASC LIMIT 200");

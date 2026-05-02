@@ -1,5 +1,4 @@
-use crate::banks::QuestionBankQuestion;
-use crate::quizzes::QuizId;
+use crate::banks::Question;
 
 use chrono::{DateTime, Utc};
 use sqlx::FromRow;
@@ -9,7 +8,6 @@ use uuid::Uuid;
 #[allow(dead_code)]
 pub struct QuestionBankSnapshot {
     pub id: Uuid,
-    pub quiz_id: QuizId,
-    pub questions: Vec<QuestionBankQuestion>,
+    pub questions: Vec<Question>,
     pub deleted_at: Option<DateTime<Utc>>,
 }

@@ -15,9 +15,8 @@ pub struct QuizController {
 
 impl QuizController {
     #[get("/{quizId}")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ReadManagedQuiz)]
-    #[doc = "Get details of a quiz by its ID. Requires read access to the quiz (func|assistant)"]
-    pub async fn get_detail(&self, req: Request) -> WebResult {
+    #[interceptor(AuthzGuard, config = AuthzAction::QuizReadManaged)] // (func | assistant)
+    pub async fn get_one(&self, req: Request) -> WebResult {
         let quiz_id = req.param::<QuizId>("quizId")?;
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
 
@@ -27,8 +26,7 @@ impl QuizController {
     }
 
     #[get("/me")]
-    #[interceptor(AuthzGuard, config = AuthzAction::ListManagedQuizzes)]
-    #[doc = "List all quizzes managed by the current user (func|assistant)"]
+    #[interceptor(AuthzGuard, config = AuthzAction::QuizListManaged)] // (func | assistant)
     pub async fn list_managed(&self, req: Request) -> WebResult {
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
         let quizzes = self.service.list_managed_by_user(current_user).await?;
@@ -37,8 +35,7 @@ impl QuizController {
     }
 
     #[post("/")]
-    #[interceptor(AuthzGuard, config = AuthzAction::CreateQuiz)]
-    #[doc = "Create a new quiz. Requires create quiz permission (func|assistant)"]
+    #[interceptor(AuthzGuard, config = AuthzAction::QuizCreate)] // (func | assistant)
     pub async fn create(&self, req: Request) -> WebResult {
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
         let input = req.body_validator::<CreateQuizDto>()?;
@@ -49,8 +46,7 @@ impl QuizController {
     }
 
     #[delete("/{quizId}")]
-    #[interceptor(AuthzGuard, config = AuthzAction::DeleteManagedQuiz)]
-    #[doc = "Delete an existing quiz. Only the quiz owner can perform this action."]
+    #[interceptor(AuthzGuard, config = AuthzAction::QuizDeleteManaged)] // (func | assistant)
     pub async fn delete(&self, req: Request) -> WebResult {
         let quiz_id = req.param::<QuizId>("quizId")?;
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
@@ -61,14 +57,25 @@ impl QuizController {
     }
 
     #[post("/join/{joinCode}")]
-    #[interceptor(AuthzGuard, config = AuthzAction::JoinQuizByCode)]
-    #[doc = "Join a quiz using a unique code. Requires join quiz permission (student)"]
+    #[interceptor(AuthzGuard, config = AuthzAction::QuizJoinByCode)] // (func | assistant)
     pub async fn join_by_code(&self, req: Request) -> WebResult {
+        let code = req.param::<String>("joinCode")?;
+        let preview = self.service.get_join_preview(&code).await?;
+
+        Ok(JsonResponse::Ok().data(preview))
+    }
+
+    #[get("/join/{joinCode}/attempts/me/result")]
+    #[interceptor(AuthzGuard, config = AuthzAction::QuizViewAttemptResultByCode)]
+    pub async fn get_my_result_by_code(&self, req: Request) -> WebResult {
         let code = req.param::<String>("joinCode")?;
         let current_user = req.user().ok_or_else(JsonResponse::Unauthorized)?;
 
-        let preview = self.service.get_join_preview(current_user, &code).await?;
+        let result = self
+            .service
+            .get_my_result_by_join_code(current_user, &code)
+            .await?;
 
-        Ok(JsonResponse::Ok().data(preview))
+        Ok(JsonResponse::Ok().data(result))
     }
 }
